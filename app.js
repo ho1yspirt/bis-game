@@ -6,7 +6,7 @@
 // ============================================================================
 // 1. CONFIGURATION — PASTE YOUR DEPLOYED SEPOLIA CONTRACT ADDRESS BELOW
 // ============================================================================
-const DEFAULT_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
+const DEFAULT_CONTRACT_ADDRESS = "0x961694129afe8508fdaf8ce324ef23d281902f5c";
 const SEPOLIA_CHAIN_ID = 11155111n;
 const SEPOLIA_CHAIN_HEX = "0xaa36a7";
 const STORAGE_KEY_CONTRACT = "sherlock_sepolia_contract_address_v1";

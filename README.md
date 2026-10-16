@@ -20,7 +20,7 @@ Dalībnieku lomas:
   5. [Student 5 Name] — QA Testing (2+ Wallets), Etherscan Verification & Security Analysis
 GitHub repozitorijs: https://github.com/ho1yspirt/bis-game
 Spēles publiskā lapa: https://ho1yspirt.github.io/bis-game/
-Sepolia līgums: 0x[YOUR_DEPLOYED_SEPOLIA_CONTRACT_ADDRESS]
+Sepolia līgums: 0x961694129afe8508fdaf8ce324ef23d281902f5c
 Etherscan darījums: https://sepolia.etherscan.io/tx/0x[YOUR_SAMPLE_TX_HASH]
 Kas darbojas:
   - 3 sequential Sherlock Holmes riddles verified on-chain via keccak256(bytes32) hashes
