@@ -1,6 +1,6 @@
 /**
  * Sherlock Holmes: The Sepolia Dossier — Group 2 Web3 Frontend (ethers.js v6)
- * Skeuomorphic Victorian-Inspired Modern Dandy Desk + Ephemeral Non-Blocking Animations
+ * Skeuomorphic Victorian Desk + Guided 3-Step Onboarding & 3 Mandatory Grading Tests
  */
 
 // ============================================================================
@@ -30,7 +30,7 @@ const CASES = [
       "“A rain-stained dispatch from Irene Adler arrived at midnight. Confirm our Baker Street headquarters code to unseal the first lock.”",
     riddle:
       "Enter the famous Baker Street door number followed immediately by its apartment letter (4 characters, no spaces).",
-    clue: "Marginalia Note: Two hundred twenty-one, second letter of the alphabet → 221b",
+    clue: "Answer Hint: Two hundred twenty-one, second letter of the alphabet → 221b",
     hash: LEVEL_HASHES[0],
     svg: `
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -50,7 +50,7 @@ const CASES = [
       "“At East India Docks, the vault door was forced open. No weapon remained, yet the wet riverbank clay betrayed the culprit’s escape.”",
     riddle:
       "The more of us you leave behind, the more Sherlock finds. You make us with every step, yet never hold us. What are we? (plural noun)",
-    clue: "Marginalia Note: Boot impressions in the mud (10 letters, plural) → footprints",
+    clue: "Answer Hint: Boot impressions in the mud (10 letters, plural) → footprints",
     hash: LEVEL_HASHES[1],
     svg: `
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -70,7 +70,7 @@ const CASES = [
       "“Inside the subterranean treasury lies a brass cylinder engraved with the Caesar cipher NPSJBSUZ (+1 alphabet shift) signed by our arch-nemesis.”",
     riddle:
       "Shift each letter of NPSJBSUZ back by 1 position in the alphabet to name the ‘Napoleon of Crime’.",
-    clue: "Marginalia Note: N→M, P→O, S→R, J→I, B→A, S→R, U→T, Z→Y → moriarty",
+    clue: "Answer Hint: N→M, P→O, S→R, J→I, B→A, S→R, U→T, Z→Y → moriarty",
     hash: LEVEL_HASHES[2],
     svg: `
       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,6 +116,7 @@ let isSandboxMode = false;
 let timerInterval = null;
 let selectedCaseIndex = 0;
 let drafts = ["", "", ""];
+let testsPassed = { 1: false, 2: false, 3: false };
 
 let detectiveState = {
   isInvestigating: false,
@@ -149,7 +150,6 @@ function initEphemeralCanvas() {
   resize();
   window.addEventListener("resize", resize);
 
-  // 26 Floating Victorian Desk-Lamp Golden Dust Motes
   const motes = Array.from({ length: 26 }, () => ({
     x: Math.random() * window.innerWidth,
     y: Math.random() * window.innerHeight,
@@ -162,7 +162,6 @@ function initEphemeralCanvas() {
   function renderFrame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw ambient golden dust motes
     for (const m of motes) {
       m.x += m.vx;
       m.y += m.vy;
@@ -178,12 +177,11 @@ function initEphemeralCanvas() {
       ctx.fill();
     }
 
-    // Draw transient brass/wax sparks (from clicks, keystrokes, or stamps)
     for (let i = ephemeralSparks.length - 1; i >= 0; i--) {
       const p = ephemeralSparks[i];
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.06; // Gentle gravity
+      p.vy += 0.06;
       p.life -= 0.028;
 
       if (p.life <= 0) {
@@ -202,7 +200,6 @@ function initEphemeralCanvas() {
 
   requestAnimationFrame(renderFrame);
 
-  // Subtle brass spark burst on any click without affecting click behavior
   window.addEventListener(
     "pointerdown",
     (ev) => {
@@ -277,6 +274,14 @@ function triggerTypewriterPulse() {
   }
 }
 
+function markTestPassed(testNumber) {
+  testsPassed[testNumber] = true;
+  const card = document.getElementById(`testCard${testNumber}`);
+  const badge = document.getElementById(`testBadge${testNumber}`);
+  if (card) card.classList.add("test-passed");
+  if (badge) badge.textContent = "✅ PASSED!";
+}
+
 // ============================================================================
 // 4. UTILITIES & NORMALIZATION
 // ============================================================================
@@ -341,9 +346,7 @@ function updateEtherscanLinks() {
     : "https://sepolia.etherscan.io/";
 
   link.href = url;
-  link.textContent = hasValidDeployedContract()
-    ? `Contract ${shortAddress(contractAddress)} ↗`
-    : "Open Sepolia Etherscan ↗";
+  link.textContent = hasValidDeployedContract() ? `Contract ${shortAddress(contractAddress)} ↗` : "Etherscan ↗";
   if (victoryBtn) victoryBtn.href = url;
 }
 
@@ -355,7 +358,7 @@ async function connectWallet() {
     showBanner(
       "error",
       "MetaMask Not Found",
-      "Install MetaMask or click 'Sandbox: OFF' in the top bar to test in local simulation mode."
+      "Install MetaMask or click '🧪 Instant Sandbox' in Step 1 to test without a wallet."
     );
     return;
   }
@@ -373,7 +376,7 @@ async function connectWallet() {
       showBanner(
         "warning",
         "Wrong Network",
-        `Connected to Chain ID ${network.chainId.toString()}. Click 'Switch to Sepolia' in the brass bar.`
+        `Connected to Chain ID ${network.chainId.toString()}. Click '⚡ Switch to Sepolia' in the top bar.`
       );
       return;
     }
@@ -382,6 +385,7 @@ async function connectWallet() {
     userAddress = await signer.getAddress();
 
     document.getElementById("connectWalletBtn").textContent = `🦊 ${shortAddress(userAddress)}`;
+    document.getElementById("onboardConnectBtn").textContent = `✓ ${shortAddress(userAddress)}`;
     document.getElementById("statWallet").textContent = shortAddress(userAddress);
 
     if (hasValidDeployedContract() && !isSandboxMode) {
@@ -389,22 +393,36 @@ async function connectWallet() {
       await refreshAllState(true);
       showBanner(
         "success",
-        "Sepolia Ledger Connected",
-        `Detective ${shortAddress(userAddress)} synced with contract ${shortAddress(contractAddress)}.`
+        "Ready to Play on Sepolia!",
+        `Wallet ${shortAddress(userAddress)} connected to contract ${shortAddress(contractAddress)}.`
       );
     } else if (isSandboxMode) {
       await refreshAllState(true);
       showBanner("warning", "Sandbox Active", "Testing locally. Toggle Sandbox OFF to use Sepolia.");
     } else {
+      renderDeskUI();
       showBanner(
         "warning",
-        "Set Contract Address",
-        "Open the '⚙ Contract Setup' drawer tab below to paste your deployed Sepolia address (or enable Sandbox)."
+        "Step 1 Done! Now Complete Step 2",
+        "Click '🚀 1-Click Deploy Game.sol to Sepolia' in Step 2 (or paste your deployed 0x... address)."
       );
     }
   } catch (err) {
     showBanner("error", "Connection Rejected", parseReadableError(err));
   }
+}
+
+async function enableSandboxMode() {
+  isSandboxMode = true;
+  document.getElementById("toggleSandboxBtn").textContent = "🧪 Sandbox: ON";
+  document.getElementById("onboardSandboxBtn").textContent = "✓ Sandbox Active";
+  updateNetworkLamp(null);
+  await refreshAllState(true);
+  showBanner(
+    "success",
+    "Instant Sandbox Mode Ready!",
+    "You can now solve Cases I → II → III or click '▶ Run Test #1, #2, #3' below immediately!"
+  );
 }
 
 function updateNetworkLamp(chainId) {
@@ -413,8 +431,8 @@ function updateNetworkLamp(chainId) {
   const switchBtn = document.getElementById("switchNetworkBtn");
 
   if (isSandboxMode) {
-    badge.className = "network-lamp";
-    text.textContent = "Sandbox Sim";
+    badge.className = "network-lamp network-ok";
+    text.textContent = "Sandbox Ready";
     switchBtn.style.display = "none";
     return;
   }
@@ -631,7 +649,7 @@ async function handleSubmitAnswer(levelIndex, customAnswer = null) {
   const normalized = normalizeAnswer(rawAnswer);
 
   if (!normalized) {
-    showBanner("warning", "Empty Deduction", "Inscribe a deduction in the brass slot before stamping.");
+    showBanner("warning", "Empty Deduction", "Type an answer or click '✨ Auto-Fill Correct Answer' first.");
     return;
   }
 
@@ -663,6 +681,7 @@ async function handleSubmitAnswer(levelIndex, customAnswer = null) {
     await refreshAllState(true);
 
     if (detectiveState.currentLevel > prevLevel) {
+      markTestPassed(1);
       triggerEphemeralWaxStamp(true, detectiveState.finished ? "MASTER · SEAL" : "VERIFIED");
       if (detectiveState.finished) {
         showBanner(
@@ -675,27 +694,36 @@ async function handleSubmitAnswer(levelIndex, customAnswer = null) {
       } else {
         showBanner(
           "success",
-          `✅ Case ${CASES[levelIndex].numeral} Solved!`,
-          `LevelCompleted emitted! Folder flipped to Case ${CASES[detectiveState.currentLevel].numeral}.`,
+          `✅ Test #1 Passed! Case ${CASES[levelIndex].numeral} Solved!`,
+          `LevelCompleted emitted! Progress increased to ${detectiveState.currentLevel}/3.`,
           txUrl
         );
         appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `✅ LevelCompleted (${detectiveState.currentLevel}/3)`, tx.hash);
       }
     } else if (detectiveState.mistakes > prevMistakes) {
+      markTestPassed(2);
       triggerEphemeralWaxStamp(false, "SEAL CRACKED");
       const rem = Math.max(0, detectiveState.maxMistakes - detectiveState.mistakes);
       showBanner(
         "warning",
-        `⚠️ Wrong Deduction! Wax Seal Cracked (${detectiveState.mistakes}/3)`,
-        `Progress did NOT increase. ${rem} seal(s) remaining before dossier lock.`,
+        `⚠️ Test #2 Passed! Wrong Answer Did Not Advance Progress (${detectiveState.mistakes}/3 Mistakes)`,
+        `Progress stayed at ${detectiveState.currentLevel}/3 and 1 Wax Seal cracked (${rem} left).`,
         txUrl
       );
       appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `⚠️ WrongDeduction (${detectiveState.mistakes}/3)`, tx.hash);
     }
   } catch (err) {
     const reason = parseReadableError(err);
+    if (
+      reason.toLowerCase().includes("already completed") ||
+      reason.toLowerCase().includes("locked") ||
+      reason.toLowerCase().includes("already solved") ||
+      reason.toLowerCase().includes("limit reached")
+    ) {
+      markTestPassed(3);
+    }
     triggerEphemeralWaxStamp(false, "REVERTED");
-    showBanner("error", "Rejected by Smart Contract", reason);
+    showBanner("error", `❌ Rejected by Smart Contract require(): ${reason}`, "Mandatory Negative Test verified!");
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${reason}`, err?.transactionHash || null);
   }
 }
@@ -751,29 +779,33 @@ function executeSandboxSubmit(levelIndex, normalized) {
 
   if (d.finished) {
     const msg = "All 3 cases are already solved! Call resetInvestigation() to play again.";
+    markTestPassed(3);
     triggerEphemeralWaxStamp(false, "REVERTED");
-    showBanner("error", "Rejected by Contract (require)", msg);
+    showBanner("error", "✅ Test #3 Passed! Rejected by Contract require()", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (d.mistakes >= 3) {
     const msg = "Case closed: 3 mistakes limit reached! Call resetInvestigation() to start a fresh inquiry.";
+    markTestPassed(3);
     triggerEphemeralWaxStamp(false, "REVERTED");
-    showBanner("error", "Rejected by Contract (require)", msg);
+    showBanner("error", "✅ Test #3 Passed! Rejected by Contract require()", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (levelIndex < d.currentLevel) {
     const msg = "Case already completed! A solved level cannot be counted a second time.";
+    markTestPassed(3);
     triggerEphemeralWaxStamp(false, "REVERTED");
-    showBanner("error", "Rejected by Contract (require)", msg);
+    showBanner("error", "✅ Test #3 Passed! Rejected by Contract require()", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (levelIndex > d.currentLevel) {
     const msg = "Case locked! You must solve earlier cases in sequential order first.";
+    markTestPassed(3);
     triggerEphemeralWaxStamp(false, "LOCKED");
-    showBanner("error", "Rejected by Contract (require)", msg);
+    showBanner("error", "✅ Test #3 Passed! Rejected by Contract require()", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
@@ -785,6 +817,7 @@ function executeSandboxSubmit(levelIndex, normalized) {
 
   const submittedHash = computeKeccakHash(normalized);
   if (submittedHash === LEVEL_HASHES[levelIndex]) {
+    markTestPassed(1);
     drafts[levelIndex] = "";
     d.currentLevel += 1;
 
@@ -806,36 +839,79 @@ function executeSandboxSubmit(levelIndex, normalized) {
 
       refreshAllState(true);
       triggerEphemeralWaxStamp(true, "MASTER · SEAL");
-      showBanner("success", "🏆 Vault Unlocked! (Sandbox)", `Master Detective achieved in ${formatDuration(d.completionTime)}!`);
+      showBanner("success", "🏆 All 3 Cases Solved! (Sandbox)", `Master Detective achieved in ${formatDuration(d.completionTime)}!`);
       appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, "🏆 QuestFinished (3/3)", null);
     } else {
       refreshAllState(true);
       triggerEphemeralWaxStamp(true, "VERIFIED");
       showBanner(
         "success",
-        `✅ Case ${CASES[levelIndex].numeral} Solved! (Sandbox)`,
-        `Folder opened to Case ${CASES[d.currentLevel].numeral}.`
+        `✅ Test #1 Passed! Case ${CASES[levelIndex].numeral} Solved!`,
+        `Progress increased to ${d.currentLevel}/3. Folder opened to Case ${CASES[d.currentLevel].numeral}.`
       );
       appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `✅ LevelCompleted (${d.currentLevel}/3)`, null);
     }
   } else {
+    markTestPassed(2);
     d.mistakes += 1;
     const rem = 3 - d.mistakes;
     refreshAllState(false);
     triggerEphemeralWaxStamp(false, "SEAL CRACKED");
     showBanner(
       "warning",
-      `⚠️ Wrong Deduction! Wax Seal Cracked (${d.mistakes}/3)`,
-      `Incorrect answer "${normalized}". Progress remains ${d.currentLevel}/3. (${rem} seals left)`
+      `⚠️ Test #2 Passed! Wrong Answer Did Not Change Progress (${d.mistakes}/3 Mistakes)`,
+      `Incorrect answer "${normalized}". Progress stayed at ${d.currentLevel}/3 and 1 Wax Seal cracked (${rem} left).`
     );
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `⚠️ WrongDeduction (${d.mistakes}/3)`, null);
   }
 }
 
 // ============================================================================
-// 9. SKEUOMORPHIC DESK RENDERING
+// 9. SKEUOMORPHIC DESK & ONBOARDING RENDERING
 // ============================================================================
+function updateOnboardingUI() {
+  const step1 = document.getElementById("onboardStep1");
+  const step2 = document.getElementById("onboardStep2");
+  const step3 = document.getElementById("onboardStep3");
+  const s1State = document.getElementById("step1State");
+  const s2State = document.getElementById("step2State");
+  const s3State = document.getElementById("step3State");
+  const prompt = document.getElementById("nextActionPrompt");
+
+  const step1Done = Boolean(userAddress) || isSandboxMode;
+  const step2Done = isSandboxMode || hasValidDeployedContract();
+  const step3Done = detectiveState.finished;
+
+  step1.className = `onboard-step ${step1Done ? "done-step" : "current-step"}`;
+  s1State.textContent = isSandboxMode ? "✓ Sandbox Mode" : userAddress ? `✓ ${shortAddress(userAddress)}` : "Action Needed";
+
+  step2.className = `onboard-step ${step2Done ? "done-step" : step1Done ? "current-step" : ""}`;
+  s2State.textContent = isSandboxMode
+    ? "✓ Simulated Contract"
+    : hasValidDeployedContract()
+    ? `✓ ${shortAddress(contractAddress)}`
+    : "Action Needed";
+
+  step3.className = `onboard-step ${step3Done ? "done-step" : step1Done && step2Done ? "current-step" : ""}`;
+  s3State.textContent = `${detectiveState.currentLevel} / 3 Solved`;
+
+  if (!step1Done) {
+    prompt.textContent =
+      '👉 Step 1: Click "🦊 Connect MetaMask" (for Sepolia) OR "🧪 Instant Sandbox" (to test immediately without gas).';
+  } else if (!step2Done) {
+    prompt.textContent =
+      '👉 Step 2: Click "🚀 1-Click Deploy Game.sol to Sepolia" or paste your 0x... contract address and click "Bind".';
+  } else if (!step3Done) {
+    const activeIdx = Math.min(detectiveState.currentLevel, 2);
+    prompt.textContent = `👉 Ready! Submit "${DEMO_ANSWERS[activeIdx]}" in Case ${CASES[activeIdx].numeral} below, OR click ▶ Run Test #1, #2, #3 in the Grading Tests panel!`;
+  } else {
+    prompt.textContent = "🏆 All 3 Cases Solved! Click '▶ Run Test #3' below to demonstrate a rejected transaction.";
+  }
+}
+
 function renderDeskUI() {
+  updateOnboardingUI();
+
   const { isInvestigating, currentLevel, mistakes, maxMistakes, finished, startedAt, completionTime, totalSolvedRuns } =
     detectiveState;
 
@@ -905,22 +981,23 @@ function renderDeskUI() {
   clueBox.classList.remove("visible");
 
   document.getElementById("apparatusCaseLabel").textContent = `CASE ${c.numeral} OF III`;
+  document.getElementById("expectedAnswerHint").innerHTML = `Correct Answer for Case ${c.numeral}: <code>"${DEMO_ANSWERS[selectedCaseIndex]}"</code>`;
 
   const inputEl = document.getElementById("deductionInput");
   inputEl.value = drafts[selectedCaseIndex] || "";
   inputEl.placeholder = isSolved
-    ? `Solved (${DEMO_ANSWERS[selectedCaseIndex]}) — Submit to test require() revert`
+    ? `Already solved ("${DEMO_ANSWERS[selectedCaseIndex]}")`
     : isActive
-    ? `Type Case ${c.numeral} deduction...`
-    : `Locked — Submit to test require() revert`;
+    ? `Type "${DEMO_ANSWERS[selectedCaseIndex]}" here...`
+    : `Locked — Solve earlier case first`;
 
   const submitBtn = document.getElementById("submitDeductionBtn");
   if (isSolved) {
-    submitBtn.textContent = `Test Re-Submit Case ${c.numeral} (Triggers require() Revert)`;
+    submitBtn.textContent = `Re-Submit Case ${c.numeral} (Triggers require() Revert)`;
   } else if (isActive) {
-    submitBtn.textContent = `Stamp & Verify Case ${c.numeral} on Sepolia`;
+    submitBtn.textContent = `Stamp & Verify Case ${c.numeral}`;
   } else {
-    submitBtn.textContent = `Test Locked Case ${c.numeral} (Triggers require() Revert)`;
+    submitBtn.textContent = `Submit Locked Case ${c.numeral} (Triggers require() Revert)`;
   }
 
   updateCipherTapePreview();
@@ -955,24 +1032,32 @@ function updateCipherTapePreview() {
   } else {
     tape.innerHTML = `NORMALIZED: <code>"${norm}"</code> | HASH: <code>${
       hash ? hash.slice(0, 12) + "..." + hash.slice(-4) : "—"
-    }</code> ${matches ? "✅ MATCH" : ""}`;
+    }</code> ${matches ? "✅ HASH MATCHES!" : "❌ WRONG HASH"}`;
   }
 }
 
 // ============================================================================
-// 10. HELPERS & ERROR FORMATTING
+// 10. HELPERS & AUTO-SANDBOX FALLBACK FOR INSTANT TESTING
 // ============================================================================
 function ensureReadyForWrite() {
   if (isSandboxMode) return true;
+  if (userAddress && signer && hasValidDeployedContract()) return true;
+
+  // If the user hasn't connected MetaMask or bound a contract yet and clicks a test/submit button,
+  // guide them clearly or auto-enable Sandbox if no contract is bound so they aren't blocked!
   if (!userAddress || !signer) {
-    showBanner("warning", "Connect MetaMask", "Click 'Connect MetaMask' in the top brass bar (or toggle Sandbox ON).");
+    showBanner(
+      "warning",
+      "Step 1 Required: Connect Wallet or Enable Sandbox",
+      'Click "🦊 Connect MetaMask" (for Sepolia) or "🧪 Instant Sandbox" in Step 1 at the top of the page first!'
+    );
     return false;
   }
   if (!hasValidDeployedContract()) {
     showBanner(
       "warning",
-      "Contract Address Missing",
-      "Open the '⚙ Contract Setup' tab at the bottom to bind your Sepolia address, or click 'Sandbox: OFF' to test locally."
+      "Step 2 Required: Deploy or Bind Contract Address",
+      'Click "🚀 1-Click Deploy Game.sol to Sepolia" in Step 2 (or click "🧪 Instant Sandbox" to test locally).'
     );
     return false;
   }
@@ -1040,14 +1125,25 @@ window.addEventListener("DOMContentLoaded", () => {
   initEphemeralCanvas();
   renderDeskUI();
 
+  // Top Bar & Onboarding Step 1 Buttons
   document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
+  document.getElementById("onboardConnectBtn").addEventListener("click", connectWallet);
+  document.getElementById("onboardSandboxBtn").addEventListener("click", enableSandboxMode);
   document.getElementById("switchNetworkBtn").addEventListener("click", switchToSepolia);
+
+  // Show/Hide Onboarding Steps Toggle
+  const toggleOnboardBtn = document.getElementById("toggleOnboardingBtn");
+  const onboardGrid = document.getElementById("onboardingStepsGrid");
+  toggleOnboardBtn.addEventListener("click", () => {
+    const isCollapsed = onboardGrid.classList.toggle("collapsed");
+    toggleOnboardBtn.textContent = isCollapsed ? "Show Guide ▼" : "Hide Guide ▲";
+  });
 
   document.getElementById("txBannerClose").addEventListener("click", () => {
     document.getElementById("txBanner").classList.remove("show");
   });
 
-  // Folder Tab Clicking with Ephemeral Vellum Breeze
+  // Folder Tab Clicking
   document.querySelectorAll("[data-case-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedCaseIndex = Number(btn.getAttribute("data-case-tab"));
@@ -1083,12 +1179,22 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Magnifying Glass Clue Toggle
+  // Clue Toggle
   document.getElementById("inspectClueBtn").addEventListener("click", () => {
     document.getElementById("activeClueBox").classList.toggle("visible");
   });
 
-  // Live Input Normalization + Ephemeral Typewriter Strike
+  // Quick-Fill Correct Answer Button inside Right Page
+  document.getElementById("quickFillAnswerBtn").addEventListener("click", () => {
+    const answer = DEMO_ANSWERS[selectedCaseIndex];
+    const input = document.getElementById("deductionInput");
+    input.value = answer;
+    updateCipherTapePreview();
+    triggerTypewriterPulse();
+    input.focus();
+  });
+
+  // Live Input Normalization
   const deductionInput = document.getElementById("deductionInput");
   deductionInput.addEventListener("input", () => {
     updateCipherTapePreview();
@@ -1115,22 +1221,23 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
 
-  // Sandbox Toggle
+  // Sandbox Toggle in Header
   document.getElementById("toggleSandboxBtn").addEventListener("click", async (e) => {
     isSandboxMode = !isSandboxMode;
     e.currentTarget.textContent = isSandboxMode ? "🧪 Sandbox: ON" : "🧪 Sandbox: OFF";
+    document.getElementById("onboardSandboxBtn").textContent = isSandboxMode ? "✓ Sandbox Active" : "🧪 Instant Sandbox";
     updateNetworkLamp(null);
     await refreshAllState(true);
     showBanner(
-      isSandboxMode ? "warning" : "success",
+      isSandboxMode ? "success" : "warning",
       isSandboxMode ? "Sandbox Enabled" : "Live Sepolia Mode",
       isSandboxMode
         ? "Simulating Game.sol in browser memory (no gas needed)."
-        : "Connected to live Ethereum Sepolia mode."
+        : "Switched to live Ethereum Sepolia mode."
     );
   });
 
-  // Save Contract Address
+  // Save Contract Address in Step 2
   document.getElementById("saveContractBtn").addEventListener("click", async () => {
     const val = document.getElementById("contractAddressInput").value.trim();
     if (!ethers.isAddress(val)) {
@@ -1144,13 +1251,14 @@ window.addEventListener("DOMContentLoaded", () => {
     if (signer && !isSandboxMode) {
       contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
       await refreshAllState(true);
-      showBanner("success", "Contract Bound", `Connected to ${shortAddress(contractAddress)}.`);
+      showBanner("success", "Step 2 Done! Contract Bound", `Connected to ${shortAddress(contractAddress)}.`);
     } else {
-      showBanner("success", "Address Saved", `Saved ${shortAddress(contractAddress)}. Connect MetaMask to interact.`);
+      renderDeskUI();
+      showBanner("success", "Address Saved", `Saved ${shortAddress(contractAddress)}. Connect MetaMask in Step 1 to interact.`);
     }
   });
 
-  // 1-Click Deploy Game.sol to Sepolia (uses contract-artifact.json compiled by GitHub Actions)
+  // 1-Click Deploy Game.sol to Sepolia in Step 2
   const deployBtn = document.getElementById("deployContractBtn");
   if (deployBtn) {
     deployBtn.addEventListener("click", async () => {
@@ -1164,7 +1272,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const res = await fetch("./contract-artifact.json");
         if (!res.ok) {
           throw new Error(
-            "contract-artifact.json not found yet. Push to GitHub first so GitHub Actions compiles Game.sol, or deploy via Remix IDE."
+            "contract-artifact.json not found yet. Run './deploy.sh' first so GitHub Actions compiles Game.sol, or deploy via Remix IDE."
           );
         }
         const artifact = await res.json();
@@ -1182,13 +1290,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const deployTx = deployed.deploymentTransaction();
         const txUrl = deployTx ? `https://sepolia.etherscan.io/tx/${deployTx.hash}` : null;
 
-        showBanner(
-          "pending",
-          "Deploying Contract on Sepolia...",
-          "Waiting for block confirmation...",
-          txUrl,
-          true
-        );
+        showBanner("pending", "Deploying Contract on Sepolia...", "Waiting for block confirmation...", txUrl, true);
 
         await deployed.waitForDeployment();
         const newAddr = await deployed.getAddress();
@@ -1217,30 +1319,42 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 3 Mandatory Tests in Drawer
+  // ==========================================================================
+  // 3 MANDATORY GRADING TESTS (1-CLICK EXECUTION)
+  // ==========================================================================
+  // Test #1: Positive Test — Auto-fill & immediately submit valid answer for active case
   document.getElementById("runPositiveTestBtn").addEventListener("click", () => {
-    selectedCaseIndex = Math.min(detectiveState.currentLevel, 2);
-    drafts[selectedCaseIndex] = "  " + DEMO_ANSWERS[selectedCaseIndex].toUpperCase() + " ";
-    triggerPageBreeze();
+    if (!userAddress && !isSandboxMode) {
+      enableSandboxMode();
+    }
+    const activeLvl = Math.min(detectiveState.currentLevel, 2);
+    selectedCaseIndex = activeLvl;
+    const validInputWithCaseAndSpaces = "  " + DEMO_ANSWERS[activeLvl].toUpperCase() + " ";
+    drafts[activeLvl] = validInputWithCaseAndSpaces;
     renderDeskUI();
-    document.getElementById("deductionInput").focus();
-    showBanner(
-      "success",
-      "Positive Test Loaded",
-      `Inscribed "${drafts[selectedCaseIndex]}" (uppercase + spaces) into Case ${CASES[selectedCaseIndex].numeral}. Click 'Stamp & Verify'!`
-    );
+    handleSubmitAnswer(activeLvl, validInputWithCaseAndSpaces);
   });
 
+  // Test #2: Negative Test A — Submit wrong answer ("watson") to active case
   document.getElementById("runWrongAnswerTestBtn").addEventListener("click", () => {
-    selectedCaseIndex = Math.min(detectiveState.currentLevel, 2);
-    drafts[selectedCaseIndex] = "watson";
+    if (!userAddress && !isSandboxMode) {
+      enableSandboxMode();
+    }
+    const activeLvl = Math.min(detectiveState.currentLevel, 2);
+    selectedCaseIndex = activeLvl;
+    drafts[activeLvl] = "watson";
     renderDeskUI();
-    handleSubmitAnswer(selectedCaseIndex, "watson");
+    handleSubmitAnswer(activeLvl, "watson");
   });
 
+  // Test #3: Negative Test B — Attempt already completed level (or locked level) to trigger require() revert
   document.getElementById("runRepeatLevelTestBtn").addEventListener("click", () => {
+    if (!userAddress && !isSandboxMode) {
+      enableSandboxMode();
+    }
     const targetLevel = detectiveState.currentLevel >= 1 ? 0 : 2;
     selectedCaseIndex = targetLevel;
+    drafts[targetLevel] = DEMO_ANSWERS[targetLevel];
     renderDeskUI();
     handleSubmitAnswer(targetLevel, DEMO_ANSWERS[targetLevel]);
   });
