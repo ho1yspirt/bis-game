@@ -9,6 +9,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
+  <!-- Ephemeral Ambient Layers (pointer-events: none — zero impact on game logic) -->
+  <canvas id="ephemeralCanvas" aria-hidden="true"></canvas>
+  <div class="gaslamp-glow" aria-hidden="true"></div>
+
   <div class="desk-wrapper">
     <!-- 1. TOP BRASS INSTRUMENT PLAQUE -->
     <header class="brass-header">
@@ -16,14 +20,17 @@
         <div class="camel-monogram" aria-hidden="true">SH</div>
         <div>
           <span class="brand-title">THE SEPOLIA DOSSIER</span>
-          <span class="brand-subtitle">221B Baker Street · Consulting Detective Ledger</span>
+          <span class="brand-subtitle">221B Baker Street · Group 2 Blockchain Treasure Hunt</span>
         </div>
       </div>
 
       <div class="instrument-cluster">
         <!-- Pocket Watch Chronometer -->
         <div class="watch-dial" title="On-Chain Investigation Chronometer">
-          <span>⏱</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="gear-cw">
+            <circle cx="12" cy="12" r="6" stroke="#5e410b" stroke-width="2.2"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1" stroke="#5e410b" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
           <span id="statTimer">00:00</span>
         </div>
 
@@ -47,7 +54,98 @@
       </div>
     </header>
 
-    <!-- 2. TELEGRAPH TICKER TAPE (Notifications & Tx Status) -->
+    <!-- 2. STEP-BY-STEP ONBOARDING & SETUP GUIDE (Clear Next Action!) -->
+    <section id="onboardingPanel" class="onboarding-panel" aria-label="Step-by-Step Setup Guide">
+      <div class="onboarding-top">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-family: var(--font-display); font-weight: 800; color: var(--brass-highlight); font-size: 0.92rem; letter-spacing: 0.06em;">
+            🧭 QUICK START GUIDE
+          </span>
+          <div id="nextActionPrompt" class="next-action-pill">
+            👉 Step 1: Click "Connect MetaMask" (for Sepolia) OR "Start Instant Sandbox" (to test without gas).
+          </div>
+        </div>
+        <button id="toggleOnboardingBtn" class="btn-leather" type="button">
+          Hide Guide ▲
+        </button>
+      </div>
+
+      <div id="onboardingStepsGrid" class="onboarding-steps">
+        <!-- STEP 1: WALLET OR SANDBOX -->
+        <div id="onboardStep1" class="onboard-step current-step">
+          <div>
+            <div class="step-head">
+              <span class="step-num-badge">Step 1 · Choose Mode</span>
+              <span id="step1State" class="step-state">Action Needed</span>
+            </div>
+            <h3>Connect Wallet or Practice</h3>
+            <p>Connect your Sepolia MetaMask wallet, or turn on Sandbox Mode to test the full game locally in 1 click.</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="onboardConnectBtn" class="btn-brass" type="button" style="flex: 1; padding: 8px 10px; font-size: 0.74rem;">
+              🦊 Connect MetaMask
+            </button>
+            <button id="onboardSandboxBtn" class="btn-leather" type="button" style="flex: 1;">
+              🧪 Instant Sandbox
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: DEPLOY OR BIND CONTRACT -->
+        <div id="onboardStep2" class="onboard-step">
+          <div>
+            <div class="step-head">
+              <span class="step-num-badge">Step 2 · Smart Contract</span>
+              <span id="step2State" class="step-state">Waiting</span>
+            </div>
+            <h3>Deploy or Paste Address</h3>
+            <p>Deploy <code>Game.sol</code> directly to Sepolia with 1 click, or paste your existing <code>0x...</code> contract address:</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <div style="display: flex; gap: 6px;">
+              <input
+                id="contractAddressInput"
+                class="contract-input"
+                style="flex: 1; width: auto; padding: 6px 9px;"
+                type="text"
+                placeholder="0x... Sepolia address"
+              />
+              <button id="saveContractBtn" class="btn-leather" type="button">
+                Bind
+              </button>
+            </div>
+            <button id="deployContractBtn" class="btn-brass" type="button" style="width: 100%; padding: 8px 10px; font-size: 0.74rem;">
+              🚀 1-Click Deploy Game.sol to Sepolia
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: PLAY OR RUN THE 3 MANDATORY TESTS -->
+        <div id="onboardStep3" class="onboard-step">
+          <div>
+            <div class="step-head">
+              <span class="step-num-badge">Step 3 · Solve &amp; Demo</span>
+              <span id="step3State" class="step-state">0 / 3 Solved</span>
+            </div>
+            <h3>Solve 3 Cases &amp; Run 3 Tests</h3>
+            <p>
+              Answers: Case I = <code>221b</code>, Case II = <code>footprints</code>, Case III = <code>moriarty</code>.
+              Use the <strong>3 Mandatory Tests</strong> bar below for your class demo!
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="#guidedTestsPanel" class="btn-leather" style="flex: 1; text-align: center;">
+              🎓 Jump to 3 Grading Tests ↓
+            </a>
+            <a id="etherscanContractLink" class="btn-leather" href="https://sepolia.etherscan.io/" target="_blank" rel="noopener noreferrer">
+              Etherscan ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TELEGRAPH TICKER TAPE (Notifications & Tx Status) -->
     <div id="txBanner" class="telegraph-strip" role="status" aria-live="polite">
       <div style="display: flex; align-items: center; gap: 12px;">
         <div id="txSpinner" class="brass-gear-spinner" style="display: none;"></div>
@@ -64,7 +162,7 @@
       </div>
     </div>
 
-    <!-- 3. TACTILE DESK HUD (Rank, Progress, 3 Physical Wax Seals, Quick Actions) -->
+    <!-- 4. TACTILE DESK HUD (Rank, Progress, 3 Physical Wax Seals, Quick Actions) -->
     <section class="desk-hud" aria-label="Detective Status">
       <div class="hud-group">
         <div class="hud-item">
@@ -76,11 +174,11 @@
           <span id="statRank" class="hud-value">Observer</span>
         </div>
         <div class="hud-item">
-          <span class="hud-label">Solved:</span>
+          <span class="hud-label">Progress:</span>
           <span id="statProgress" class="hud-value">0 / 3</span>
         </div>
         <div class="hud-item" title="3 Wax Seals — Each wrong on-chain deduction cracks one seal">
-          <span class="hud-label">Seals Intact:</span>
+          <span class="hud-label">Lives (Seals):</span>
           <div class="wax-seals-row">
             <div id="waxSeal0" class="wax-seal-token">I</div>
             <div id="waxSeal1" class="wax-seal-token">II</div>
@@ -91,14 +189,14 @@
       </div>
 
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button id="startInvestigationBtn" class="btn-leather" type="button">
-          📂 Open Dossier
+        <button id="startInvestigationBtn" class="btn-leather" type="button" title="Optional: explicitly start timer before Case I">
+          📂 Start Timer
         </button>
         <button id="reloadStateBtn" class="btn-leather" type="button" title="Read latest progress from Ethereum Sepolia">
-          ↻ Sync Chain
+          ↻ Reload from Chain
         </button>
-        <button id="resetInvestigationBtn" class="btn-leather btn-crimson" type="button">
-          ↺ Reset Case
+        <button id="resetInvestigationBtn" class="btn-leather btn-crimson" type="button" title="Reset progress & restore all 3 wax seals">
+          ↺ Reset Progress
         </button>
       </div>
     </section>
@@ -117,7 +215,7 @@
       </a>
     </div>
 
-    <!-- 4. SKEUOMORPHIC OPEN CASE FOLDER (Tabbed Single-Folder View) -->
+    <!-- 5. SKEUOMORPHIC OPEN CASE FOLDER (Tabbed Single-Folder View) -->
     <main class="folder-system">
       <!-- Physical Die-Cut Folder Tabs -->
       <div class="folder-tabs" role="tablist">
@@ -136,7 +234,10 @@
       </div>
 
       <!-- Two-Page Open Vellum Dossier -->
-      <div class="dossier-spread">
+      <div id="dossierSpread" class="dossier-spread">
+        <!-- Ephemeral Floating Wax Impression (pointer-events: none) -->
+        <div id="ephemeralStampFx" class="ephemeral-stamp-fx" aria-hidden="true"></div>
+
         <!-- LEFT PAGE: Evidence Plate, Engraving & Telegraph Riddle -->
         <div class="dossier-page left-page">
           <div>
@@ -150,10 +251,8 @@
             <h1 id="activeCaseTitle" class="case-heading">Case I: The Baker Street Cipher</h1>
 
             <!-- Framed Victorian Copperplate Engraving + Short Atmospheric Caption -->
-            <div class="evidence-frame">
-              <div id="activeCaseArtwork" class="engraving-art" aria-hidden="true">
-                <!-- Dynamic Victorian SVG Engraving injected by app.js -->
-              </div>
+            <div id="evidenceFrame" class="evidence-frame">
+              <div id="activeCaseArtwork" class="engraving-art" aria-hidden="true"></div>
               <p id="activeCaseStory" class="evidence-caption">
                 “A rain-stained dispatch from Irene Adler arrived at midnight. Confirm our Baker Street headquarters
                 code to unseal the first lock.”
@@ -162,7 +261,7 @@
 
             <!-- Pinned Telegraph Riddle Slip -->
             <div class="telegram-slip">
-              <div class="telegram-header">⚡ SCOTLAND YARD TELEGRAPH · RIDDLE INQUIRY</div>
+              <div class="telegram-header">⚡ SCOTLAND YARD TELEGRAPH · RIDDLE TO SOLVE</div>
               <p id="activeCaseRiddle" class="telegram-riddle">
                 Enter the famous Baker Street door number followed immediately by its apartment letter (4 characters, no spaces).
               </p>
@@ -172,7 +271,7 @@
           <!-- Magnifying Glass Clue Button & Marginalia Note -->
           <div>
             <button id="inspectClueBtn" class="btn-leather" type="button">
-              🔍 Inspect with Brass Magnifying Lens (Clue)
+              🔍 Show Answer Hint / Clue
             </button>
             <div id="activeClueBox" class="clue-note"></div>
           </div>
@@ -180,21 +279,37 @@
 
         <!-- RIGHT PAGE: Brass Telegraph Key Input & Wax Signet Stamp -->
         <div class="dossier-page right-page">
-          <div class="apparatus-box">
+          <div id="apparatusBox" class="apparatus-box">
             <div class="apparatus-title">
-              <span>⚙ Brass Cipher Apparatus</span>
+              <span style="display: inline-flex; align-items: center; gap: 8px;">
+                <span class="clockwork-ornament" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="gear-cw">
+                    <circle cx="12" cy="12" r="5" stroke="#fae39c" stroke-width="2"/>
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="#c89d42" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" class="gear-ccw">
+                    <circle cx="12" cy="12" r="5" stroke="#c89d42" stroke-width="2"/>
+                    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#fae39c" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <span>Submit Your Answer</span>
+              </span>
               <span id="apparatusCaseLabel" style="font-size: 0.74rem; color: #b7a482;">CASE I OF III</span>
             </div>
 
-            <label for="deductionInput" style="display: block; font-size: 0.88rem; color: #d6c5a3; margin-bottom: 6px;">
-              Inscribe Your Deduction (Case &amp; Space Normalized):
-            </label>
+            <!-- Clear Quick-Fill Demo Helper -->
+            <div class="quick-fill-bar">
+              <span id="expectedAnswerHint">Expected Answer for Case I: <code>"221b"</code></span>
+              <button id="quickFillAnswerBtn" class="btn-leather" type="button" style="padding: 4px 10px; font-size: 0.72rem;">
+                ✨ Auto-Fill Correct Answer
+              </button>
+            </div>
 
             <input
               id="deductionInput"
               class="typewriter-slot"
               type="text"
-              placeholder="Type answer here..."
+              placeholder="Type answer here (e.g. 221b)..."
               autocomplete="off"
             />
 
@@ -212,24 +327,103 @@
 
           <!-- Compact Footnote on Right Page -->
           <div style="margin-top: 16px; padding-top: 12px; border-top: 1px dashed rgba(110, 82, 39, 0.35); display: flex; justify-content: space-between; align-items: center; font-family: var(--font-typewriter); font-size: 0.76rem; color: var(--ink-sepia); flex-wrap: wrap; gap: 8px;">
-            <span>Contract Rule: <code>keccak256(_normalize(answer))</code></span>
+            <span>Uppercase &amp; spaces are normalized automatically</span>
             <span id="statRuns">Solved Dossiers: 0</span>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- 5. BOTTOM BRASS DESK DRAWER (Tabbed to eliminate visual overload) -->
-    <section class="brass-drawer" aria-label="Ledger and Inspector Controls">
+    <!-- 6. ALWAYS-VISIBLE 3 MANDATORY GRADING TESTS WALKTHROUGH -->
+    <section id="guidedTestsPanel" class="guided-tests-panel" aria-label="3 Mandatory Grading Tests">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+        <div>
+          <span style="font-family: var(--font-display); font-weight: 800; color: var(--brass-highlight); font-size: 1.05rem;">
+            🎓 3 Mandatory Grading Tests — Click Each Button in Order for Your Class Demo
+          </span>
+          <div style="font-family: var(--font-typewriter); font-size: 0.78rem; color: #b7a482; margin-top: 2px;">
+            Each card below executes the exact blockchain operation required by the Group 2 rubric and marks itself ✅ Passed.
+          </div>
+        </div>
+      </div>
+
+      <div class="lab-grid">
+        <!-- MANDATORY TEST 1 -->
+        <div id="testCard1" class="guided-test-card">
+          <div>
+            <div class="step-head" style="margin-bottom: 6px;">
+              <strong style="font-family: var(--font-display); color: var(--brass-highlight); font-size: 0.88rem;">
+                Test #1 · Positive Test
+              </strong>
+              <span id="testBadge1" class="test-status-pill">○ Not Run Yet</span>
+            </div>
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;">
+              Correct Answer Unlocks Next Level
+            </div>
+            <ul class="test-how-list">
+              <li><strong>What it does:</strong> Submits the correct answer (<code>"221b"</code> / <code>"footprints"</code> / <code>"moriarty"</code>) for your active case.</li>
+              <li><strong>Proof:</strong> Progress increases (<code>0 → 1</code>) and emits <code>LevelCompleted</code> on Etherscan.</li>
+            </ul>
+          </div>
+          <button id="runPositiveTestBtn" class="btn-brass" type="button" style="width: 100%;">
+            ▶ Run Test #1 (Submit Valid Answer)
+          </button>
+        </div>
+
+        <!-- MANDATORY TEST 2 -->
+        <div id="testCard2" class="guided-test-card">
+          <div>
+            <div class="step-head" style="margin-bottom: 6px;">
+              <strong style="font-family: var(--font-display); color: var(--brass-highlight); font-size: 0.88rem;">
+                Test #2 · Negative Test A
+              </strong>
+              <span id="testBadge2" class="test-status-pill">○ Not Run Yet</span>
+            </div>
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;">
+              Wrong Answer Does Not Change Progress
+            </div>
+            <ul class="test-how-list">
+              <li><strong>What it does:</strong> Submits wrong answer <code>"watson"</code> to the active case.</li>
+              <li><strong>Proof:</strong> Progress does <strong>not</strong> increase, 1 red wax seal cracks (<code>mistakes + 1</code>), and emits <code>WrongDeduction</code>.</li>
+            </ul>
+          </div>
+          <button id="runWrongAnswerTestBtn" class="btn-leather" type="button" style="width: 100%;">
+            ▶ Run Test #2 (Send Wrong Answer "watson")
+          </button>
+        </div>
+
+        <!-- MANDATORY TEST 3 -->
+        <div id="testCard3" class="guided-test-card">
+          <div>
+            <div class="step-head" style="margin-bottom: 6px;">
+              <strong style="font-family: var(--font-display); color: var(--brass-highlight); font-size: 0.88rem;">
+                Test #3 · Negative Test B
+              </strong>
+              <span id="testBadge3" class="test-status-pill">○ Not Run Yet</span>
+            </div>
+            <div style="font-weight: 700; color: #fff; font-size: 0.92rem;">
+              Completed / Locked Level Is Rejected
+            </div>
+            <ul class="test-how-list">
+              <li><strong>What it does:</strong> Attempts to re-submit an already solved level (or skip ahead to a locked level).</li>
+              <li><strong>Proof:</strong> Smart contract rejects the call via <code>require()</code> revert!</li>
+            </ul>
+          </div>
+          <button id="runRepeatLevelTestBtn" class="btn-leather btn-crimson" type="button" style="width: 100%;">
+            ▶ Run Test #3 (Trigger require() Rejection)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. BOTTOM BRASS DESK DRAWER (Leaderboard, Session Tx Log & Security Answer) -->
+    <section class="brass-drawer" aria-label="Ledger and Evidence Log">
       <div class="drawer-tabs" role="tablist">
         <button class="drawer-tab active" type="button" data-drawer-tab="paneLeaderboard">
-          🏛️ Scotland Yard Honour Roll (+5 Bonus)
-        </button>
-        <button class="drawer-tab" type="button" data-drawer-tab="paneTestLab">
-          🔬 Inspector’s Verification Lab (3 Mandatory Tests)
+          🏛️ Scotland Yard Honour Roll (+5 Bonus Leaderboard)
         </button>
         <button class="drawer-tab" type="button" data-drawer-tab="paneSetup">
-          ⚙ Contract Setup, Tx Log &amp; Security Note
+          📜 Transaction Evidence Log &amp; Security Question Answer
         </button>
       </div>
 
@@ -255,7 +449,7 @@
             <tbody id="leaderboardBody">
               <tr>
                 <td colspan="5" style="text-align: center; color: #9c8a6b;">
-                  Connect MetaMask (or enable Sandbox) to read the Honour Roll.
+                  Connect MetaMask (or click "Instant Sandbox" in Step 1 above) to view the Honour Roll.
                 </td>
               </tr>
             </tbody>
@@ -263,63 +457,8 @@
         </div>
       </div>
 
-      <!-- TAB 2: 3 Mandatory Tests for Classroom Demo -->
-      <div id="paneTestLab" class="drawer-pane">
-        <div class="lab-grid">
-          <div class="lab-card">
-            <div>
-              <strong>1. Positive Test (Unlock Next Case)</strong>
-              <p>Pre-fills the active case’s correct answer with uppercase &amp; spaces to prove normalization and level unlock.</p>
-            </div>
-            <button id="runPositiveTestBtn" class="btn-brass" type="button">
-              Fill Valid Answer
-            </button>
-          </div>
-
-          <div class="lab-card">
-            <div>
-              <strong>2. Negative Test A (Wrong Answer)</strong>
-              <p>Submits <code>"watson"</code> to the active case. Cracks 1 wax seal (mistake +1) while progress remains unchanged.</p>
-            </div>
-            <button id="runWrongAnswerTestBtn" class="btn-leather" type="button">
-              Submit Wrong Deduction
-            </button>
-          </div>
-
-          <div class="lab-card">
-            <div>
-              <strong>3. Negative Test B (Repeated / Locked Case)</strong>
-              <p>Calls <code>submitAnswer</code> on an already-solved or locked case to trigger a Solidity <code>require()</code> revert.</p>
-            </div>
-            <button id="runRepeatLevelTestBtn" class="btn-leather btn-crimson" type="button">
-              Trigger require() Revert
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 3: Contract Address Config, Session Tx Log & Security Question -->
+      <!-- TAB 2: Session Tx Log & Security Question -->
       <div id="paneSetup" class="drawer-pane">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #2e2212;">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <strong style="font-family: var(--font-display); font-size: 0.84rem; color: var(--brass-highlight);">
-              Sepolia Contract Address:
-            </strong>
-            <input
-              id="contractAddressInput"
-              class="contract-input"
-              type="text"
-              placeholder="0x... (Paste deployed Game.sol address)"
-            />
-            <button id="saveContractBtn" class="btn-brass" type="button" style="padding: 7px 14px;">
-              Bind Contract
-            </button>
-          </div>
-          <a id="etherscanContractLink" class="btn-leather" href="https://sepolia.etherscan.io/" target="_blank" rel="noopener noreferrer">
-            Open Sepolia Etherscan ↗
-          </a>
-        </div>
-
         <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px;">
           <div>
             <strong style="font-family: var(--font-display); font-size: 0.84rem; color: var(--brass-highlight); display: block; margin-bottom: 6px;">
@@ -345,7 +484,7 @@
 
           <div style="background: #120d08; border: 1px solid #423119; border-radius: 10px; padding: 14px; font-size: 0.83rem; color: #d6c5a3;">
             <strong style="font-family: var(--font-display); color: var(--brass-highlight); display: block; margin-bottom: 6px;">
-              🔐 Why Public Blockchains Have No Secret Data:
+              🔐 Why Public Blockchains Have No Secret Data (Demo Answer):
             </strong>
             <p style="margin: 0 0 6px;">
               1. <strong>Public Storage:</strong> Even <code>private</code> state variables (<code>bytes32[3] answerHashes</code>) are readable via <code>eth_getStorageAt</code>.

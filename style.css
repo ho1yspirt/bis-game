@@ -44,7 +44,6 @@ html, body {
   padding: 0;
   min-height: 100vh;
   background-color: var(--walnut-dark);
-  /* Mahogany rim + British Racing Green leather desk inlay + overhead lamp glow */
   background-image:
     radial-gradient(ellipse at 50% 12%, rgba(250, 227, 156, 0.12) 0%, transparent 55%),
     radial-gradient(ellipse at 50% 50%, #143025 0%, #091712 68%, #160c07 100%);
@@ -52,6 +51,7 @@ html, body {
   font-family: var(--font-serif);
   font-size: 17px;
   line-height: 1.5;
+  overflow-x: hidden;
 }
 
 /* Subtle SVG noise overlay for tactile leather/paper grain */
@@ -65,6 +65,193 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* =========================================================================
+   EPHEMERAL AMBIENT LAYER (100% pointer-events: none — Zero Logic Impact)
+   ========================================================================= */
+#ephemeralCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* Flickering Victorian Gaslamp Glow Overlay */
+.gaslamp-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(circle at 50% 18%, rgba(255, 214, 130, 0.075), transparent 62%);
+  animation: gaslampFlicker 7s ease-in-out infinite alternate;
+}
+
+@keyframes gaslampFlicker {
+  0%   { opacity: 0.72; transform: scale(1); }
+  35%  { opacity: 0.95; transform: scale(1.02); }
+  52%  { opacity: 0.65; transform: scale(0.99); }
+  78%  { opacity: 1;    transform: scale(1.03); }
+  100% { opacity: 0.8;  transform: scale(1); }
+}
+
+/* Ephemeral Floating Wax Impression / Cigar Smoke Ghost */
+.ephemeral-stamp-fx {
+  position: absolute;
+  right: 36px;
+  top: 24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.68rem;
+  letter-spacing: 0.09em;
+  text-align: center;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: scale(1.8) rotate(-14deg);
+}
+
+.ephemeral-stamp-fx.stamp-good {
+  background: radial-gradient(circle at 35% 35%, rgba(39, 141, 98, 0.92), rgba(16, 74, 49, 0.94));
+  border: 2.5px double var(--brass-highlight);
+  color: var(--brass-highlight);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 2px 5px rgba(255, 255, 255, 0.35);
+  animation: ephemeralWaxSlam 1.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ephemeral-stamp-fx.stamp-bad {
+  background: radial-gradient(circle at 35% 35%, rgba(201, 48, 59, 0.92), rgba(94, 12, 18, 0.94));
+  border: 2.5px dashed #fca5a5;
+  color: #ffe4e6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  animation: ephemeralWaxCrack 1.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes ephemeralWaxSlam {
+  0%   { opacity: 0; transform: scale(2.1) rotate(-22deg); filter: blur(3px); }
+  14%  { opacity: 0.96; transform: scale(0.94) rotate(-8deg); filter: blur(0); }
+  24%  { opacity: 0.96; transform: scale(1.02) rotate(-10deg); }
+  72%  { opacity: 0.88; transform: scale(1) rotate(-10deg); }
+  100% { opacity: 0; transform: scale(1.06) translateY(-10px) rotate(-10deg); }
+}
+
+@keyframes ephemeralWaxCrack {
+  0%   { opacity: 0; transform: scale(1.9) rotate(16deg); }
+  14%  { opacity: 0.96; transform: scale(0.92) rotate(6deg); }
+  22%  { transform: translate(-5px, 2px) rotate(3deg); }
+  30%  { transform: translate(5px, -2px) rotate(9deg); }
+  38%  { transform: translate(0, 0) rotate(6deg); }
+  75%  { opacity: 0.85; }
+  100% { opacity: 0; transform: scale(0.85) translateY(12px) rotate(12deg); }
+}
+
+/* Ephemeral Page-Turn Breeze Sweep (Non-blocking) */
+.dossier-spread.page-breeze {
+  animation: vellumBreeze 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dossier-spread.page-breeze::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 248, 226, 0.55) 48%,
+    rgba(138, 106, 54, 0.22) 54%,
+    transparent 78%
+  );
+  background-size: 240% 100%;
+  animation: pageLightSweep 0.45s ease-out forwards;
+}
+
+@keyframes vellumBreeze {
+  0%   { transform: perspective(1200px) rotateY(2.2deg) translateY(2px); }
+  50%  { transform: perspective(1200px) rotateY(-0.8deg) translateY(-1px); }
+  100% { transform: perspective(1200px) rotateY(0deg) translateY(0); }
+}
+
+@keyframes pageLightSweep {
+  0%   { background-position: 120% 0; opacity: 0.95; }
+  100% { background-position: -40% 0; opacity: 0; }
+}
+
+/* Ephemeral Typewriter Key-Strike Micro-Pulse */
+.apparatus-box.key-struck {
+  animation: typewriterStrike 0.09s ease-out;
+}
+
+@keyframes typewriterStrike {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(1.5px); }
+  100% { transform: translateY(0); }
+}
+
+/* Ephemeral Cipher Tape Gold Foil Glint */
+.cipher-tape.tape-glint {
+  animation: cipherGlint 0.36s ease-out;
+}
+
+@keyframes cipherGlint {
+  0%   { border-color: var(--brass-highlight); box-shadow: 0 0 12px rgba(250, 227, 156, 0.32); }
+  100% { border-color: #3d2d14; box-shadow: none; }
+}
+
+/* Ambient Clockwork Escapement Gears */
+.clockwork-ornament {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.gear-cw {
+  animation: rotateCW 9s linear infinite;
+  transform-origin: center;
+}
+
+.gear-ccw {
+  animation: rotateCCW 6s linear infinite;
+  transform-origin: center;
+}
+
+body.tx-busy .gear-cw {
+  animation-duration: 1.4s;
+}
+
+body.tx-busy .gear-ccw {
+  animation-duration: 1s;
+}
+
+@keyframes rotateCW {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotateCCW {
+  to { transform: rotate(-360deg); }
+}
+
+/* Engraved SVG subtle breathing float */
+.engraving-art svg {
+  width: 100%;
+  height: 100%;
+  animation: artifactFloat 5.5s ease-in-out infinite alternate;
+}
+
+@keyframes artifactFloat {
+  0%   { transform: scale(0.98) rotate(-1deg); filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.2)); }
+  100% { transform: scale(1.03) rotate(1deg);  filter: drop-shadow(0 0 8px rgba(250, 227, 156, 0.45)); }
+}
+
 .desk-wrapper {
   position: relative;
   z-index: 2;
@@ -72,7 +259,6 @@ body::before {
   margin: 18px auto 42px;
   padding: 22px;
   border-radius: 22px;
-  /* Stitched Savile Row leather desk pad sitting on mahogany */
   background:
     linear-gradient(145deg, rgba(20, 48, 37, 0.94), rgba(8, 22, 16, 0.98));
   border: 2px solid var(--brass-dark);
@@ -104,7 +290,6 @@ body::before {
   margin-bottom: 18px;
 }
 
-/* Corner Brass Rivets/Screws */
 .brass-header::before,
 .brass-header::after {
   content: "";
@@ -205,11 +390,17 @@ body::before {
   border-radius: 50%;
   background: #d97706;
   box-shadow: 0 0 8px #f59e0b;
+  animation: lampPulse 2.4s ease-in-out infinite;
 }
 
 .network-lamp.network-ok .lamp-dot {
   background: #10b981;
   box-shadow: 0 0 10px #34d399;
+}
+
+@keyframes lampPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
 }
 
 /* Skeuomorphic Mechanical Buttons */
@@ -313,6 +504,12 @@ body::before {
     inset 0 0 12px rgba(138, 106, 54, 0.25);
   font-family: var(--font-typewriter);
   font-size: 0.84rem;
+  animation: telegraphFeed 0.24s ease-out;
+}
+
+@keyframes telegraphFeed {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .telegraph-strip.show {
@@ -342,12 +539,8 @@ body::before {
   height: 18px;
   border: 2.5px dashed var(--brass-dark);
   border-radius: 50%;
-  animation: spin 1.4s linear infinite;
+  animation: rotateCW 1.4s linear infinite;
   flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 /* =========================================================================
@@ -434,7 +627,6 @@ body::before {
   margin-bottom: 24px;
 }
 
-/* Physical Die-Cut Folder Tabs */
 .folder-tabs {
   display: flex;
   align-items: flex-end;
@@ -497,7 +689,6 @@ body::before {
   display: grid;
   grid-template-columns: 1fr 1fr;
   background:
-    /* Center book spine shadow */
     linear-gradient(90deg,
       var(--vellum-light) 0%,
       var(--vellum-mid) 47.5%,
@@ -509,7 +700,6 @@ body::before {
   color: var(--ink-dark);
   border-radius: 0 14px 14px 14px;
   border: 2px solid #967a4f;
-  /* Multi-layered stacked paper edges + desk drop shadow */
   box-shadow:
     0 3px 0 #d4be98,
     0 6px 0 #91764c,
@@ -560,12 +750,13 @@ body::before {
   line-height: 1.2;
 }
 
-/* Framed Sepia Evidence Plate (Artwork / Engraving Container) */
+/* Framed Sepia Evidence Plate (With Ephemeral Spotlight Hover) */
 .evidence-frame {
   position: relative;
+  overflow: hidden;
   margin: 10px 0 14px;
   padding: 14px;
-  background: radial-gradient(circle at 50% 50%, #fbf5e6 0%, #e3cfa9 100%);
+  background: radial-gradient(circle at var(--lens-x, 50%) var(--lens-y, 50%), #fffaf0 0%, #e3cfa9 75%);
   border: 2px solid #8c6f44;
   outline: 1px dashed #6e5532;
   outline-offset: -6px;
@@ -589,11 +780,6 @@ body::before {
   display: grid;
   place-items: center;
   padding: 8px;
-}
-
-.engraving-art svg {
-  width: 100%;
-  height: 100%;
 }
 
 .evidence-caption {
@@ -643,6 +829,7 @@ body::before {
   font-family: var(--font-typewriter);
   font-size: 0.82rem;
   color: #3d2c14;
+  animation: telegraphFeed 0.2s ease-out;
 }
 
 .clue-note.visible {
@@ -733,6 +920,7 @@ body::before {
   display: grid;
   place-items: center;
   font-size: 1.35rem;
+  pointer-events: none;
 }
 
 /* Victory Royal Warrant Certificate */
@@ -810,7 +998,6 @@ body::before {
   display: block;
 }
 
-/* Tables inside Drawer */
 .table-wrap {
   overflow-x: auto;
 }
@@ -839,7 +1026,6 @@ td a {
   color: var(--brass-highlight);
 }
 
-/* Verification Test Cards inside Drawer */
 .lab-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -882,7 +1068,196 @@ td a {
   width: min(380px, 100%);
 }
 
+/* =========================================================================
+   7. CLEAN ONBOARDING STEPPER & GUIDED MANDATORY TESTS CHECKLIST
+   ========================================================================= */
+.onboarding-panel {
+  background: linear-gradient(180deg, #1d150c 0%, #120d07 100%);
+  border: 2px solid var(--brass-mid);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(250, 227, 156, 0.28);
+}
+
+.onboarding-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.next-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 8px;
+  background: rgba(250, 227, 156, 0.14);
+  border: 1px solid var(--brass-mid);
+  font-family: var(--font-typewriter);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brass-highlight);
+}
+
+.onboarding-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.onboarding-steps.collapsed {
+  display: none;
+}
+
+.onboard-step {
+  background: #0e0a06;
+  border: 1.5px solid #3d2c15;
+  border-radius: 11px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.onboard-step.current-step {
+  border-color: var(--brass-highlight);
+  box-shadow: 0 0 18px rgba(250, 227, 156, 0.18);
+  background: linear-gradient(180deg, rgba(200, 157, 66, 0.12), #0e0a06);
+}
+
+.onboard-step.done-step {
+  border-color: #10b981;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1), #0e0a06);
+}
+
+.step-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.step-num-badge {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-highlight);
+}
+
+.step-state {
+  font-family: var(--font-typewriter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: #231a0f;
+  color: #b7a482;
+}
+
+.onboard-step.done-step .step-state {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+}
+
+.onboard-step.current-step .step-state {
+  background: rgba(250, 227, 156, 0.22);
+  color: var(--brass-highlight);
+}
+
+.onboard-step h3 {
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  margin: 4px 0;
+  color: #fff;
+}
+
+.onboard-step p {
+  font-size: 0.84rem;
+  color: #c7b699;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Always-Visible 3 Mandatory Grading Tests Bar */
+.guided-tests-panel {
+  background: linear-gradient(180deg, #1b140d 0%, #120d08 100%);
+  border: 2px solid var(--brass-dark);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+}
+
+.guided-test-card {
+  background: #0d0905;
+  border: 1.5px solid #3d2c15;
+  border-radius: 11px;
+  padding: 15px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guided-test-card.test-passed {
+  border-color: #10b981;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1), #0d0905);
+}
+
+.test-status-pill {
+  font-family: var(--font-typewriter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: #241a0e;
+  color: #cbb693;
+  border: 1px solid #4a371c;
+}
+
+.guided-test-card.test-passed .test-status-pill {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border-color: #10b981;
+}
+
+.test-how-list {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  font-family: var(--font-typewriter);
+  font-size: 0.75rem;
+  color: #d6c5a3;
+  line-height: 1.45;
+}
+
+.quick-fill-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(250, 227, 156, 0.08);
+  border: 1px dashed rgba(200, 157, 66, 0.38);
+  font-family: var(--font-typewriter);
+  font-size: 0.75rem;
+  color: #e6d4b0;
+}
+
 @media (max-width: 900px) {
+  .onboarding-steps {
+    grid-template-columns: 1fr;
+  }
   .dossier-spread {
     grid-template-columns: 1fr;
     background: var(--vellum-light);

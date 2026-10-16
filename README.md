@@ -18,8 +18,8 @@ Dalībnieku lomas:
   3. [Student 3 Name] — Web3 / Ethers.js & MetaMask Integration (app.js)
   4. [Student 4 Name] — Frontend UI/UX & GitHub Pages Deployment (index.html, style.css)
   5. [Student 5 Name] — QA Testing (2+ Wallets), Etherscan Verification & Security Analysis
-GitHub repozitorijs: https://github.com/[YOUR_USERNAME]/[YOUR_REPO]
-Spēles publiskā lapa: https://[YOUR_USERNAME].github.io/[YOUR_REPO]/
+GitHub repozitorijs: https://github.com/ho1yspirt/bis-game
+Spēles publiskā lapa: https://ho1yspirt.github.io/bis-game/
 Sepolia līgums: 0x[YOUR_DEPLOYED_SEPOLIA_CONTRACT_ADDRESS]
 Etherscan darījums: https://sepolia.etherscan.io/tx/0x[YOUR_SAMPLE_TX_HASH]
 Kas darbojas:

@@ -1,6 +1,6 @@
 /**
  * Sherlock Holmes: The Sepolia Dossier — Group 2 Web3 Frontend (ethers.js v6)
- * Connects HTML interface to the SherlockTreasureHunt contract on Ethereum Sepolia.
+ * Skeuomorphic Victorian-Inspired Modern Dandy Desk + Ephemeral Non-Blocking Animations
  */
 
 // ============================================================================
@@ -20,7 +20,72 @@ const LEVEL_HASHES = [
 
 const DEMO_ANSWERS = ["221b", "footprints", "moriarty"];
 
-// Embedded ABI matching abi.json and Game.sol (works both on GitHub Pages and local file://)
+const CASES = [
+  {
+    level: 0,
+    numeral: "I",
+    tabTitle: "CASE I · BAKER ST.",
+    title: "Case I: The Baker Street Cipher",
+    story:
+      "“A rain-stained dispatch from Irene Adler arrived at midnight. Confirm our Baker Street headquarters code to unseal the first lock.”",
+    riddle:
+      "Enter the famous Baker Street door number followed immediately by its apartment letter (4 characters, no spaces).",
+    clue: "Marginalia Note: Two hundred twenty-one, second letter of the alphabet → 221b",
+    hash: LEVEL_HASHES[0],
+    svg: `
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" stroke="#d4af37" stroke-width="2" stroke-dasharray="3 2"/>
+        <rect x="28" y="16" width="44" height="68" rx="22" stroke="#f5dc8b" stroke-width="2.5"/>
+        <circle cx="50" cy="42" r="10" stroke="#f5dc8b" stroke-width="2.5"/>
+        <path d="M45 49 L42 72 L58 72 L55 49" stroke="#f5dc8b" stroke-width="2.5" fill="rgba(212,175,55,0.2)"/>
+        <text x="50" y="29" text-anchor="middle" fill="#d4af37" font-family="Georgia" font-size="9" font-weight="bold">221</text>
+      </svg>`
+  },
+  {
+    level: 1,
+    numeral: "II",
+    tabTitle: "CASE II · THAMES DOCK",
+    title: "Case II: The Thames Mud Specimen",
+    story:
+      "“At East India Docks, the vault door was forced open. No weapon remained, yet the wet riverbank clay betrayed the culprit’s escape.”",
+    riddle:
+      "The more of us you leave behind, the more Sherlock finds. You make us with every step, yet never hold us. What are we? (plural noun)",
+    clue: "Marginalia Note: Boot impressions in the mud (10 letters, plural) → footprints",
+    hash: LEVEL_HASHES[1],
+    svg: `
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" stroke="#d4af37" stroke-width="2" stroke-dasharray="3 2"/>
+        <ellipse cx="42" cy="36" rx="11" ry="16" transform="rotate(-12 42 36)" stroke="#f5dc8b" stroke-width="2.5" fill="rgba(212,175,55,0.18)"/>
+        <rect x="34" y="55" width="14" height="11" rx="4" transform="rotate(-12 41 60)" stroke="#f5dc8b" stroke-width="2.2"/>
+        <circle cx="64" cy="64" r="16" stroke="#d4af37" stroke-width="2.5"/>
+        <line x1="75" y1="75" x2="86" y2="86" stroke="#f5dc8b" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>`
+  },
+  {
+    level: 2,
+    numeral: "III",
+    tabTitle: "CASE III · THE CRYPTEX",
+    title: "Case III: The Reichenbach Cryptex",
+    story:
+      "“Inside the subterranean treasury lies a brass cylinder engraved with the Caesar cipher NPSJBSUZ (+1 alphabet shift) signed by our arch-nemesis.”",
+    riddle:
+      "Shift each letter of NPSJBSUZ back by 1 position in the alphabet to name the ‘Napoleon of Crime’.",
+    clue: "Marginalia Note: N→M, P→O, S→R, J→I, B→A, S→R, U→T, Z→Y → moriarty",
+    hash: LEVEL_HASHES[2],
+    svg: `
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="44" stroke="#d4af37" stroke-width="2" stroke-dasharray="3 2"/>
+        <rect x="20" y="32" width="60" height="36" rx="6" stroke="#f5dc8b" stroke-width="2.5" fill="rgba(212,175,55,0.15)"/>
+        <line x1="35" y1="32" x2="35" y2="68" stroke="#d4af37" stroke-width="2"/>
+        <line x1="50" y1="32" x2="50" y2="68" stroke="#d4af37" stroke-width="2"/>
+        <line x1="65" y1="32" x2="65" y2="68" stroke="#d4af37" stroke-width="2"/>
+        <circle cx="15" cy="50" r="5" stroke="#f5dc8b" stroke-width="2"/>
+        <circle cx="85" cy="50" r="5" stroke="#f5dc8b" stroke-width="2"/>
+        <text x="50" y="54" text-anchor="middle" fill="#f5dc8b" font-family="monospace" font-size="11" font-weight="bold">M·O·R·I</text>
+      </svg>`
+  }
+];
+
 const CONTRACT_ABI = [
   "function TOTAL_LEVELS() view returns (uint8)",
   "function MAX_MISTAKES() view returns (uint8)",
@@ -40,7 +105,7 @@ const CONTRACT_ABI = [
 ];
 
 // ============================================================================
-// 2. APPLICATION STATE
+// 2. STATE
 // ============================================================================
 let provider = null;
 let signer = null;
@@ -49,8 +114,9 @@ let contractAddress = DEFAULT_CONTRACT_ADDRESS;
 let contract = null;
 let isSandboxMode = false;
 let timerInterval = null;
+let selectedCaseIndex = 0;
+let drafts = ["", "", ""];
 
-// Current detective state cached from blockchain (or sandbox)
 let detectiveState = {
   isInvestigating: false,
   currentLevel: 0,
@@ -63,12 +129,156 @@ let detectiveState = {
   totalSolvedRuns: 0
 };
 
-// Local sandbox state for testing UI before Sepolia deployment
 const sandboxDetectives = {};
 const sandboxLeaderboard = [];
 
 // ============================================================================
-// 3. INITIALIZATION & INPUT NORMALIZATION
+// 3. EPHEMERAL AMBIENT VISUAL ENGINE (100% Non-Blocking, pointer-events: none)
+// ============================================================================
+const ephemeralSparks = [];
+
+function initEphemeralCanvas() {
+  const canvas = document.getElementById("ephemeralCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+  resize();
+  window.addEventListener("resize", resize);
+
+  // 26 Floating Victorian Desk-Lamp Golden Dust Motes
+  const motes = Array.from({ length: 26 }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 1.6 + 0.5,
+    vx: (Math.random() - 0.5) * 0.22,
+    vy: -Math.random() * 0.26 - 0.06,
+    phase: Math.random() * Math.PI * 2
+  }));
+
+  function renderFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw ambient golden dust motes
+    for (const m of motes) {
+      m.x += m.vx;
+      m.y += m.vy;
+      m.phase += 0.025;
+      if (m.y < -10) m.y = canvas.height + 10;
+      if (m.x < -10) m.x = canvas.width + 10;
+      if (m.x > canvas.width + 10) m.x = -10;
+
+      const alpha = 0.16 + Math.sin(m.phase) * 0.12;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(250, 227, 156, ${Math.max(0.03, alpha)})`;
+      ctx.fill();
+    }
+
+    // Draw transient brass/wax sparks (from clicks, keystrokes, or stamps)
+    for (let i = ephemeralSparks.length - 1; i >= 0; i--) {
+      const p = ephemeralSparks[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.06; // Gentle gravity
+      p.life -= 0.028;
+
+      if (p.life <= 0) {
+        ephemeralSparks.splice(i, 1);
+        continue;
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = p.color.replace("ALPHA", p.life.toFixed(2));
+      ctx.fill();
+    }
+
+    requestAnimationFrame(renderFrame);
+  }
+
+  requestAnimationFrame(renderFrame);
+
+  // Subtle brass spark burst on any click without affecting click behavior
+  window.addEventListener(
+    "pointerdown",
+    (ev) => {
+      spawnEphemeralSparks(ev.clientX, ev.clientY, 7, "gold");
+    },
+    { passive: true }
+  );
+}
+
+function spawnEphemeralSparks(x, y, count = 12, palette = "gold") {
+  const colorTemplate =
+    palette === "crimson"
+      ? "rgba(239, 68, 68, ALPHA)"
+      : palette === "emerald"
+      ? "rgba(52, 211, 153, ALPHA)"
+      : "rgba(250, 227, 156, ALPHA)";
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 2.6 + 0.6;
+    ephemeralSparks.push({
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 0.8,
+      size: Math.random() * 2.8 + 1.2,
+      life: 1,
+      color: colorTemplate
+    });
+  }
+}
+
+function triggerPageBreeze() {
+  const spread = document.getElementById("dossierSpread");
+  if (!spread) return;
+  spread.classList.remove("page-breeze");
+  void spread.offsetWidth;
+  spread.classList.add("page-breeze");
+}
+
+function triggerEphemeralWaxStamp(isGood, text) {
+  const stamp = document.getElementById("ephemeralStampFx");
+  if (!stamp) return;
+  stamp.className = "ephemeral-stamp-fx";
+  stamp.innerHTML = `<span>${text}</span>`;
+  void stamp.offsetWidth;
+  stamp.classList.add(isGood ? "stamp-good" : "stamp-bad");
+
+  const rect = stamp.getBoundingClientRect();
+  if (rect.width > 0) {
+    spawnEphemeralSparks(
+      rect.left + rect.width / 2,
+      rect.top + rect.height / 2,
+      18,
+      isGood ? "emerald" : "crimson"
+    );
+  }
+}
+
+function triggerTypewriterPulse() {
+  const box = document.getElementById("apparatusBox");
+  const tape = document.getElementById("liveCipherTape");
+  if (box) {
+    box.classList.remove("key-struck");
+    void box.offsetWidth;
+    box.classList.add("key-struck");
+  }
+  if (tape) {
+    tape.classList.remove("tape-glint");
+    void tape.offsetWidth;
+    tape.classList.add("tape-glint");
+  }
+}
+
+// ============================================================================
+// 4. UTILITIES & NORMALIZATION
 // ============================================================================
 function normalizeAnswer(rawInput) {
   return String(rawInput || "").trim().toLowerCase();
@@ -95,6 +305,14 @@ function formatDuration(seconds) {
   return `${String(mins).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
 }
 
+function hasValidDeployedContract() {
+  return (
+    typeof ethers !== "undefined" &&
+    ethers.isAddress(contractAddress) &&
+    contractAddress.toLowerCase() !== "0x0000000000000000000000000000000000000000"
+  );
+}
+
 function initContractAddress() {
   const params = new URLSearchParams(window.location.search);
   const urlContract = params.get("contract");
@@ -112,55 +330,50 @@ function initContractAddress() {
   if (contractAddress && contractAddress !== "0x0000000000000000000000000000000000000000") {
     input.value = contractAddress;
   }
-  updateEtherscanContractLink();
+  updateEtherscanLinks();
 }
 
-function updateEtherscanContractLink() {
+function updateEtherscanLinks() {
   const link = document.getElementById("etherscanContractLink");
-  if (hasValidDeployedContract()) {
-    link.href = `https://sepolia.etherscan.io/address/${contractAddress}`;
-    link.textContent = `Contract ${shortAddress(contractAddress)} ↗`;
-  } else {
-    link.href = "https://sepolia.etherscan.io/";
-    link.textContent = "Sepolia Etherscan ↗";
-  }
-}
+  const victoryBtn = document.getElementById("victoryEtherscanBtn");
+  const url = hasValidDeployedContract()
+    ? `https://sepolia.etherscan.io/address/${contractAddress}`
+    : "https://sepolia.etherscan.io/";
 
-function hasValidDeployedContract() {
-  return (
-    typeof ethers !== "undefined" &&
-    ethers.isAddress(contractAddress) &&
-    contractAddress.toLowerCase() !== "0x0000000000000000000000000000000000000000"
-  );
+  link.href = url;
+  link.textContent = hasValidDeployedContract()
+    ? `Contract ${shortAddress(contractAddress)} ↗`
+    : "Open Sepolia Etherscan ↗";
+  if (victoryBtn) victoryBtn.href = url;
 }
 
 // ============================================================================
-// 4. METAMASK & SEPOLIA CONNECTION
+// 5. METAMASK & SEPOLIA CONNECTION
 // ============================================================================
 async function connectWallet() {
   if (!window.ethereum) {
     showBanner(
       "error",
-      "MetaMask Required",
-      "MetaMask browser extension was not detected. Install MetaMask or enable Sandbox Mode to preview the UI."
+      "MetaMask Not Found",
+      "Install MetaMask or click 'Sandbox: OFF' in the top bar to test in local simulation mode."
     );
     return;
   }
 
   try {
-    showBanner("pending", "Connecting Wallet...", "Please approve the connection request in MetaMask.", null, true);
+    showBanner("pending", "Awaiting Signature", "Approve wallet connection in MetaMask...", null, true);
 
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
 
     const network = await provider.getNetwork();
-    updateNetworkBadge(network.chainId);
+    updateNetworkLamp(network.chainId);
 
     if (network.chainId !== SEPOLIA_CHAIN_ID) {
       showBanner(
         "warning",
-        "Wrong Network Selected",
-        `MetaMask is connected to Chain ID ${network.chainId.toString()}. Please switch MetaMask to Ethereum Sepolia (11155111).`
+        "Wrong Network",
+        `Connected to Chain ID ${network.chainId.toString()}. Click 'Switch to Sepolia' in the brass bar.`
       );
       return;
     }
@@ -173,50 +386,47 @@ async function connectWallet() {
 
     if (hasValidDeployedContract() && !isSandboxMode) {
       contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
-      await refreshAllState();
+      await refreshAllState(true);
       showBanner(
         "success",
-        "Connected to Ethereum Sepolia",
-        `Wallet ${shortAddress(userAddress)} connected. Progress loaded from smart contract ${shortAddress(contractAddress)}.`
+        "Sepolia Ledger Connected",
+        `Detective ${shortAddress(userAddress)} synced with contract ${shortAddress(contractAddress)}.`
       );
     } else if (isSandboxMode) {
-      await refreshAllState();
-      showBanner(
-        "warning",
-        "Wallet Connected (Sandbox Simulation Mode)",
-        "You are currently in local Sandbox Mode. Deploy Game.sol to Sepolia and paste the contract address above for on-chain transactions."
-      );
+      await refreshAllState(true);
+      showBanner("warning", "Sandbox Active", "Testing locally. Toggle Sandbox OFF to use Sepolia.");
     } else {
       showBanner(
         "warning",
-        "Wallet Connected — Contract Address Needed",
-        "MetaMask is on Sepolia! Paste your deployed Game.sol Sepolia contract address in the bar above (or click 'Sandbox Mode' to test locally)."
+        "Set Contract Address",
+        "Open the '⚙ Contract Setup' drawer tab below to paste your deployed Sepolia address (or enable Sandbox)."
       );
     }
   } catch (err) {
-    showBanner("error", "Wallet Connection Failed", parseReadableError(err));
+    showBanner("error", "Connection Rejected", parseReadableError(err));
   }
 }
 
-function updateNetworkBadge(chainId) {
+function updateNetworkLamp(chainId) {
   const badge = document.getElementById("networkBadge");
+  const text = document.getElementById("networkText");
   const switchBtn = document.getElementById("switchNetworkBtn");
 
   if (isSandboxMode) {
-    badge.className = "badge network-warn";
-    badge.textContent = "🧪 Sandbox Mode (Local)";
+    badge.className = "network-lamp";
+    text.textContent = "Sandbox Sim";
     switchBtn.style.display = "none";
     return;
   }
 
   if (chainId === SEPOLIA_CHAIN_ID) {
-    badge.className = "badge network-ok";
-    badge.textContent = "● Sepolia (11155111)";
+    badge.className = "network-lamp network-ok";
+    text.textContent = "Sepolia (11155111)";
     switchBtn.style.display = "none";
   } else {
-    badge.className = "badge network-warn";
-    badge.textContent = `● Wrong Network (${chainId ? chainId.toString() : "Unknown"})`;
-    switchBtn.style.display = "inline-flex";
+    badge.className = "network-lamp";
+    text.textContent = chainId ? `Chain ${chainId.toString()}` : "Disconnected";
+    switchBtn.style.display = chainId ? "inline-flex" : "none";
   }
 }
 
@@ -229,7 +439,6 @@ async function switchToSepolia() {
     });
     await connectWallet();
   } catch (switchError) {
-    // Error code 4902 means Sepolia is not added to MetaMask yet
     if (switchError.code === 4902) {
       try {
         await window.ethereum.request({
@@ -246,20 +455,24 @@ async function switchToSepolia() {
         });
         await connectWallet();
       } catch (addErr) {
-        showBanner("error", "Could Not Add Sepolia", parseReadableError(addErr));
+        showBanner("error", "Sepolia Add Failed", parseReadableError(addErr));
       }
     } else {
-      showBanner("error", "Network Switch Rejected", parseReadableError(switchError));
+      showBanner("error", "Switch Cancelled", parseReadableError(switchError));
     }
   }
 }
 
 // ============================================================================
-// 5. READING STATE FROM BLOCKCHAIN (OR SANDBOX)
+// 6. BLOCKCHAIN / SANDBOX STATE READS
 // ============================================================================
-async function refreshAllState() {
+async function refreshAllState(autoFocusActiveCase = false) {
   await Promise.all([loadDetectiveState(), loadLeaderboard()]);
-  renderDashboardAndCases();
+  if (autoFocusActiveCase) {
+    selectedCaseIndex = Math.min(detectiveState.currentLevel, 2);
+    triggerPageBreeze();
+  }
+  renderDeskUI();
 }
 
 async function loadDetectiveState() {
@@ -299,13 +512,12 @@ async function loadDetectiveState() {
       totalSolvedRuns: Number(data[8])
     };
   } catch (err) {
-    showBanner("error", "Failed to Read Contract State", parseReadableError(err));
+    showBanner("error", "Contract Read Error", parseReadableError(err));
   }
 }
 
 async function loadLeaderboard() {
   const tbody = document.getElementById("leaderboardBody");
-
   try {
     let entries = [];
     if (isSandboxMode) {
@@ -322,17 +534,13 @@ async function loadLeaderboard() {
       return;
     }
 
-    // Sort by fewest mistakes first, then fastest completion time
-    entries.sort((a, b) => {
-      if (a.mistakes !== b.mistakes) return a.mistakes - b.mistakes;
-      return a.completionTime - b.completionTime;
-    });
+    entries.sort((a, b) => (a.mistakes !== b.mistakes ? a.mistakes - b.mistakes : a.completionTime - b.completionTime));
 
     if (entries.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5" style="text-align: center; color: var(--text-muted);">
-            No detectives have completed all 3 cases yet. Be the first!
+          <td colspan="5" style="text-align: center; color: #9c8a6b;">
+            No detectives recorded on the Honour Roll yet. Solve all 3 cases!
           </td>
         </tr>`;
       return;
@@ -340,17 +548,17 @@ async function loadLeaderboard() {
 
     tbody.innerHTML = entries
       .map((entry, idx) => {
-        const medal = idx === 0 ? "🥇 1" : idx === 1 ? "🥈 2" : idx === 2 ? "🥉 3" : `${idx + 1}`;
+        const badge = idx === 0 ? "🥇 I" : idx === 1 ? "🥈 II" : idx === 2 ? "🥉 III" : `${idx + 1}`;
         const dateStr = entry.finishedAt
           ? new Date(entry.finishedAt * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           : "—";
         const explorerUrl = `https://sepolia.etherscan.io/address/${entry.detective}`;
         return `
           <tr>
-            <td><strong>${medal}</strong></td>
-            <td class="mono"><a href="${explorerUrl}" target="_blank" rel="noopener noreferrer">${shortAddress(entry.detective)}</a></td>
+            <td><strong>${badge}</strong></td>
+            <td><a href="${explorerUrl}" target="_blank" rel="noopener noreferrer">${shortAddress(entry.detective)}</a></td>
             <td>${entry.mistakes} / 3</td>
-            <td class="mono">${formatDuration(entry.completionTime)}</td>
+            <td>${formatDuration(entry.completionTime)}</td>
             <td>${dateStr}</td>
           </tr>`;
       })
@@ -359,14 +567,14 @@ async function loadLeaderboard() {
     tbody.innerHTML = `
       <tr>
         <td colspan="5" style="text-align: center; color: #fca5a5;">
-          Could not load leaderboard: ${parseReadableError(err)}
+          Leaderboard read failed: ${parseReadableError(err)}
         </td>
       </tr>`;
   }
 }
 
 // ============================================================================
-// 6. STATE-CHANGING TRANSACTIONS (START, SUBMIT ANSWER, RESET)
+// 7. STATE-CHANGING TRANSACTIONS
 // ============================================================================
 async function handleStartInvestigation() {
   if (!ensureReadyForWrite()) return;
@@ -376,8 +584,9 @@ async function handleStartInvestigation() {
     const d = sandboxDetectives[activeAddr];
     if (d.isInvestigating) {
       const msg = "Investigation already started. Solve the active case or reset.";
-      showBanner("error", "Rejected by Contract Rule (require)", msg);
-      appendTxLog("startInvestigation()", "Rejected (require)", null);
+      triggerEphemeralWaxStamp(false, "REVERTED");
+      showBanner("error", "Rejected by Contract (require)", msg);
+      appendTxLog("startInvestigation()", `❌ Reverted: ${msg}`, null);
       return;
     }
     d.isInvestigating = true;
@@ -387,35 +596,28 @@ async function handleStartInvestigation() {
     d.startedAt = Math.floor(Date.now() / 1000);
     d.finishedAt = 0;
     d.completionTime = 0;
-    await refreshAllState();
-    showBanner("success", "Investigation Started (Sandbox)", "Case #1 is now open and the timer has started.");
-    appendTxLog("startInvestigation()", "InvestigationStarted Event", null);
+    await refreshAllState(true);
+    triggerEphemeralWaxStamp(true, "OPENED · 221B");
+    showBanner("success", "Dossier Unsealed (Sandbox)", "Case I is open and your pocket-watch chronometer is running.");
+    appendTxLog("startInvestigation()", "✅ InvestigationStarted", null);
     return;
   }
 
   try {
-    showBanner("pending", "Waiting for MetaMask Signature...", "Confirm startInvestigation() in MetaMask.", null, true);
+    showBanner("pending", "Sign in MetaMask", "Confirm startInvestigation() in your wallet...", null, true);
     const tx = await contract.startInvestigation();
-    showBanner(
-      "pending",
-      "Transaction Submitted to Sepolia...",
-      `Waiting for block confirmation (${shortAddress(tx.hash)})...`,
-      `https://sepolia.etherscan.io/tx/${tx.hash}`,
-      true
-    );
+    const txUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
 
+    showBanner("pending", "Confirming on Sepolia", `Waiting for block (${shortAddress(tx.hash)})...`, txUrl, true);
     await tx.wait();
-    await refreshAllState();
+    await refreshAllState(true);
 
-    showBanner(
-      "success",
-      "Investigation Officially Opened!",
-      "InvestigationStarted event recorded on Ethereum Sepolia.",
-      `https://sepolia.etherscan.io/tx/${tx.hash}`
-    );
+    triggerEphemeralWaxStamp(true, "OPENED · 221B");
+    showBanner("success", "Dossier Opened On-Chain", "InvestigationStarted event recorded on Sepolia.", txUrl);
     appendTxLog("startInvestigation()", "✅ InvestigationStarted", tx.hash);
   } catch (err) {
     const reason = parseReadableError(err);
+    triggerEphemeralWaxStamp(false, "REJECTED");
     showBanner("error", "Transaction Rejected", reason);
     appendTxLog("startInvestigation()", `❌ Rejected: ${reason}`, err?.transactionHash || null);
   }
@@ -424,30 +626,28 @@ async function handleStartInvestigation() {
 async function handleSubmitAnswer(levelIndex, customAnswer = null) {
   if (!ensureReadyForWrite()) return;
 
-  const inputEl = document.getElementById(`answerInput${levelIndex}`);
-  const rawAnswer = customAnswer !== null ? customAnswer : inputEl ? inputEl.value : "";
+  const inputEl = document.getElementById("deductionInput");
+  const rawAnswer = customAnswer !== null ? customAnswer : inputEl.value;
   const normalized = normalizeAnswer(rawAnswer);
 
   if (!normalized) {
-    showBanner("warning", "Empty Deduction", "Please enter an answer before submitting to the blockchain.");
+    showBanner("warning", "Empty Deduction", "Inscribe a deduction in the brass slot before stamping.");
     return;
   }
 
-  // SANDBOX EXECUTION
   if (isSandboxMode) {
     executeSandboxSubmit(levelIndex, normalized);
     return;
   }
 
-  // LIVE SEPOLIA BLOCKCHAIN EXECUTION
   try {
     const prevLevel = detectiveState.currentLevel;
     const prevMistakes = detectiveState.mistakes;
 
     showBanner(
       "pending",
-      "Waiting for MetaMask Signature...",
-      `Submitting normalized answer "${normalized}" for Case #${levelIndex + 1}...`,
+      "Sign Deduction in MetaMask",
+      `Submitting "${normalized}" for Case ${CASES[levelIndex].numeral}...`,
       null,
       true
     );
@@ -455,52 +655,47 @@ async function handleSubmitAnswer(levelIndex, customAnswer = null) {
     const tx = await contract.submitAnswer(levelIndex, normalized);
     const txUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
 
-    showBanner(
-      "pending",
-      "Waiting for Sepolia Confirmation...",
-      `Transaction ${shortAddress(tx.hash)} broadcast. Waiting for block inclusion...`,
-      txUrl,
-      true
-    );
-
+    showBanner("pending", "Sepolia Verifying Hash", `Waiting for block inclusion (${shortAddress(tx.hash)})...`, txUrl, true);
     await tx.wait();
-    await refreshAllState();
+
+    drafts[levelIndex] = "";
+    inputEl.value = "";
+    await refreshAllState(true);
 
     if (detectiveState.currentLevel > prevLevel) {
+      triggerEphemeralWaxStamp(true, detectiveState.finished ? "MASTER · SEAL" : "VERIFIED");
       if (detectiveState.finished) {
         showBanner(
           "success",
-          "🏆 All 3 Cases Solved! QuestFinished Event Emitted!",
-          `Congratulations! You solved the full Sepolia Dossier in ${formatDuration(detectiveState.completionTime)} with ${detectiveState.mistakes} mistake(s).`,
+          "🏆 Vault Unlocked! QuestFinished!",
+          `All 3 cases solved in ${formatDuration(detectiveState.completionTime)} with ${detectiveState.mistakes} mistake(s).`,
           txUrl
         );
-        appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, "🏆 QuestFinished (Level 3/3)", tx.hash);
+        appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, "🏆 QuestFinished (3/3)", tx.hash);
       } else {
         showBanner(
           "success",
-          `✅ Case #${levelIndex + 1} Solved!`,
-          `Correct deduction! LevelCompleted event recorded on Sepolia. Case #${detectiveState.currentLevel + 1} is now unlocked.`,
+          `✅ Case ${CASES[levelIndex].numeral} Solved!`,
+          `LevelCompleted emitted! Folder flipped to Case ${CASES[detectiveState.currentLevel].numeral}.`,
           txUrl
         );
         appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `✅ LevelCompleted (${detectiveState.currentLevel}/3)`, tx.hash);
       }
     } else if (detectiveState.mistakes > prevMistakes) {
+      triggerEphemeralWaxStamp(false, "SEAL CRACKED");
       const rem = Math.max(0, detectiveState.maxMistakes - detectiveState.mistakes);
       showBanner(
         "warning",
-        `⚠️ Wrong Deduction! Progress Unchanged (${detectiveState.mistakes}/3 Mistakes)`,
-        `The contract verified your hash and recorded a mistake (WrongDeduction event). ${rem} attempt(s) remaining before case lock.`,
+        `⚠️ Wrong Deduction! Wax Seal Cracked (${detectiveState.mistakes}/3)`,
+        `Progress did NOT increase. ${rem} seal(s) remaining before dossier lock.`,
         txUrl
       );
-      appendTxLog(
-        `submitAnswer(${levelIndex}, "${normalized}")`,
-        `⚠️ WrongDeduction (Mistake ${detectiveState.mistakes}/3)`,
-        tx.hash
-      );
+      appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `⚠️ WrongDeduction (${detectiveState.mistakes}/3)`, tx.hash);
     }
   } catch (err) {
     const reason = parseReadableError(err);
-    showBanner("error", "Transaction Rejected by Smart Contract", reason);
+    triggerEphemeralWaxStamp(false, "REVERTED");
+    showBanner("error", "Rejected by Smart Contract", reason);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${reason}`, err?.transactionHash || null);
   }
 }
@@ -518,64 +713,67 @@ async function handleResetInvestigation() {
     d.startedAt = Math.floor(Date.now() / 1000);
     d.finishedAt = 0;
     d.completionTime = 0;
-    await refreshAllState();
-    showBanner("success", "Investigation Reset (Sandbox)", "Mistakes cleared and progress reset to Case #1.");
-    appendTxLog("resetInvestigation()", "InvestigationReset Event", null);
+    drafts = ["", "", ""];
+    await refreshAllState(true);
+    triggerEphemeralWaxStamp(true, "RESET · 221B");
+    showBanner("success", "Dossier Reset (Sandbox)", "All 3 red wax seals restored. Returned to Case I.");
+    appendTxLog("resetInvestigation()", "↺ InvestigationReset", null);
     return;
   }
 
   try {
-    showBanner("pending", "Waiting for MetaMask Signature...", "Confirm resetInvestigation() in MetaMask.", null, true);
+    showBanner("pending", "Sign Reset in MetaMask", "Confirm resetInvestigation()...", null, true);
     const tx = await contract.resetInvestigation();
     const txUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
 
-    showBanner("pending", "Resetting Investigation on Sepolia...", "Waiting for transaction confirmation...", txUrl, true);
+    showBanner("pending", "Resetting on Sepolia", "Waiting for block confirmation...", txUrl, true);
     await tx.wait();
-    await refreshAllState();
+    drafts = ["", "", ""];
+    await refreshAllState(true);
 
-    showBanner("success", "Investigation Reset!", "Your mistake counter and active case progress have been reset to Case #1.", txUrl);
+    triggerEphemeralWaxStamp(true, "RESET · 221B");
+    showBanner("success", "Dossier Reset On-Chain", "All 3 wax seals restored and progress set to Case I.", txUrl);
     appendTxLog("resetInvestigation()", "↺ InvestigationReset", tx.hash);
   } catch (err) {
     const reason = parseReadableError(err);
+    triggerEphemeralWaxStamp(false, "REJECTED");
     showBanner("error", "Reset Rejected", reason);
     appendTxLog("resetInvestigation()", `❌ Rejected: ${reason}`, null);
   }
 }
 
 // ============================================================================
-// 7. SANDBOX SIMULATION ENGINE (MIRRORS Game.sol EXACTLY)
+// 8. SANDBOX ENGINE (MIRRORS Game.sol EXACTLY)
 // ============================================================================
 function executeSandboxSubmit(levelIndex, normalized) {
   const activeAddr = userAddress || "0xDEMO0000000000000000000000000000000221B";
   const d = sandboxDetectives[activeAddr];
 
-  if (levelIndex < 0 || levelIndex >= 3) {
-    const msg = "Invalid case number: must be 0, 1, or 2.";
-    showBanner("error", "Rejected by Contract Rule (require)", msg);
-    appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
-    return;
-  }
   if (d.finished) {
     const msg = "All 3 cases are already solved! Call resetInvestigation() to play again.";
-    showBanner("error", "Rejected by Contract Rule (require)", msg);
+    triggerEphemeralWaxStamp(false, "REVERTED");
+    showBanner("error", "Rejected by Contract (require)", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (d.mistakes >= 3) {
     const msg = "Case closed: 3 mistakes limit reached! Call resetInvestigation() to start a fresh inquiry.";
-    showBanner("error", "Rejected by Contract Rule (require)", msg);
+    triggerEphemeralWaxStamp(false, "REVERTED");
+    showBanner("error", "Rejected by Contract (require)", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (levelIndex < d.currentLevel) {
     const msg = "Case already completed! A solved level cannot be counted a second time.";
-    showBanner("error", "Rejected by Contract Rule (require)", msg);
+    triggerEphemeralWaxStamp(false, "REVERTED");
+    showBanner("error", "Rejected by Contract (require)", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
   if (levelIndex > d.currentLevel) {
     const msg = "Case locked! You must solve earlier cases in sequential order first.";
-    showBanner("error", "Rejected by Contract Rule (require)", msg);
+    triggerEphemeralWaxStamp(false, "LOCKED");
+    showBanner("error", "Rejected by Contract (require)", msg);
     appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `❌ Reverted: ${msg}`, null);
     return;
   }
@@ -587,7 +785,9 @@ function executeSandboxSubmit(levelIndex, normalized) {
 
   const submittedHash = computeKeccakHash(normalized);
   if (submittedHash === LEVEL_HASHES[levelIndex]) {
+    drafts[levelIndex] = "";
     d.currentLevel += 1;
+
     if (d.currentLevel === 3) {
       d.finished = true;
       d.finishedAt = Math.floor(Date.now() / 1000);
@@ -604,151 +804,175 @@ function executeSandboxSubmit(levelIndex, normalized) {
       if (existingIdx === -1) sandboxLeaderboard.push(entry);
       else sandboxLeaderboard[existingIdx] = entry;
 
-      refreshAllState();
-      showBanner(
-        "success",
-        "🏆 All 3 Cases Solved! (Sandbox)",
-        `Master Consulting Detective status achieved in ${formatDuration(d.completionTime)}!`
-      );
+      refreshAllState(true);
+      triggerEphemeralWaxStamp(true, "MASTER · SEAL");
+      showBanner("success", "🏆 Vault Unlocked! (Sandbox)", `Master Detective achieved in ${formatDuration(d.completionTime)}!`);
       appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, "🏆 QuestFinished (3/3)", null);
     } else {
-      refreshAllState();
-      showBanner("success", `✅ Case #${levelIndex + 1} Solved! (Sandbox)`, `Case #${d.currentLevel + 1} is now unlocked.`);
+      refreshAllState(true);
+      triggerEphemeralWaxStamp(true, "VERIFIED");
+      showBanner(
+        "success",
+        `✅ Case ${CASES[levelIndex].numeral} Solved! (Sandbox)`,
+        `Folder opened to Case ${CASES[d.currentLevel].numeral}.`
+      );
       appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `✅ LevelCompleted (${d.currentLevel}/3)`, null);
     }
   } else {
     d.mistakes += 1;
     const rem = 3 - d.mistakes;
-    refreshAllState();
+    refreshAllState(false);
+    triggerEphemeralWaxStamp(false, "SEAL CRACKED");
     showBanner(
       "warning",
-      `⚠️ Wrong Deduction! (${d.mistakes}/3 Mistakes)`,
-      `Incorrect answer "${normalized}". Progress remains at ${d.currentLevel}/3. ${rem} attempt(s) left.`
+      `⚠️ Wrong Deduction! Wax Seal Cracked (${d.mistakes}/3)`,
+      `Incorrect answer "${normalized}". Progress remains ${d.currentLevel}/3. (${rem} seals left)`
     );
-    appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `⚠️ WrongDeduction (Mistake ${d.mistakes}/3)`, null);
+    appendTxLog(`submitAnswer(${levelIndex}, "${normalized}")`, `⚠️ WrongDeduction (${d.mistakes}/3)`, null);
   }
 }
 
 // ============================================================================
-// 8. UI RENDERING & LIVE TIMER
+// 9. SKEUOMORPHIC DESK RENDERING
 // ============================================================================
-function renderDashboardAndCases() {
+function renderDeskUI() {
   const { isInvestigating, currentLevel, mistakes, maxMistakes, finished, startedAt, completionTime, totalSolvedRuns } =
     detectiveState;
 
-  // Rank label
-  const rankNames = [
-    "Constable (Case #1 Active)",
-    "Junior Inspector (Case #2 Active)",
-    "Senior Inspector (Case #3 Active)",
-    "🏆 Master Consulting Detective"
-  ];
-  document.getElementById("statRank").textContent = isInvestigating || finished
-    ? `Rank: ${rankNames[Math.min(currentLevel, 3)]}`
-    : "Rank: Unregistered Detective";
-
-  // Progress
+  const ranks = ["Constable", "Inspector", "Chief Inspector", "🏆 Master Detective"];
+  document.getElementById("statRank").textContent = isInvestigating || finished ? ranks[Math.min(currentLevel, 3)] : "Observer";
   document.getElementById("statProgress").textContent = `${currentLevel} / 3`;
-  document.getElementById("statProgressSub").textContent = finished
-    ? "All Cases Completed!"
-    : `Current Task: Case #${currentLevel + 1}`;
+  document.getElementById("statMistakes").textContent = `(${mistakes}/${maxMistakes} mistakes)`;
+  document.getElementById("statRuns").textContent = `Solved Dossiers: ${totalSolvedRuns}`;
 
-  // Mistakes
-  document.getElementById("statMistakes").textContent = `${mistakes} / ${maxMistakes}`;
-  const remaining = Math.max(0, maxMistakes - mistakes);
-  const icons = "🔍 ".repeat(remaining) + "❌ ".repeat(mistakes);
-  document.getElementById("statLives").textContent =
-    remaining > 0 ? `${icons.trim()} (${remaining} left)` : "❌ Case Suspended (Reset Required)";
-
-  // Runs
-  document.getElementById("statRuns").textContent = `Completed Dossiers: ${totalSolvedRuns}`;
-
-  // Evidence Trail Steps
   for (let i = 0; i < 3; i++) {
-    const stepEl = document.getElementById(`step${i}`);
-    stepEl.className = "trail-step";
-    if (currentLevel > i) stepEl.classList.add("done");
-    else if (currentLevel === i && !finished) stepEl.classList.add("active");
+    const sealEl = document.getElementById(`waxSeal${i}`);
+    const isCracked = i >= maxMistakes - mistakes;
+    sealEl.className = isCracked ? "wax-seal-token cracked" : "wax-seal-token";
+    sealEl.textContent = isCracked ? "✕" : ["I", "II", "III"][i];
   }
-  const step3El = document.getElementById("step3");
-  step3El.className = finished ? "trail-step done" : "trail-step";
 
-  // Victory Banner
   const victoryCard = document.getElementById("victoryCard");
   if (finished) {
     victoryCard.classList.add("show");
-    document.getElementById("victorySummary").textContent = `Wallet: ${
-      userAddress || "Sandbox Detective"
-    } | Mistakes Used: ${mistakes}/3 | Completion Time: ${formatDuration(completionTime)}`;
+    document.getElementById("victorySummary").textContent = `Detective: ${
+      userAddress ? shortAddress(userAddress) : "Sandbox"
+    } · Mistakes: ${mistakes}/3 · Time: ${formatDuration(completionTime)}`;
   } else {
     victoryCard.classList.remove("show");
   }
 
-  // Render the 3 Case Cards
   for (let i = 0; i < 3; i++) {
-    const card = document.getElementById(`caseCard${i}`);
-    const statusPill = document.getElementById(`caseStatus${i}`);
-    const input = document.getElementById(`answerInput${i}`);
-    const btn = document.getElementById(`submitBtn${i}`);
+    const tab = document.getElementById(`folderTab${i}`);
+    const seal = document.getElementById(`tabSeal${i}`);
+    tab.className = "folder-tab";
+    if (i === selectedCaseIndex) tab.classList.add("active-tab");
 
-    card.className = "case-card";
     if (i < currentLevel) {
-      card.classList.add("solved-case");
-      statusPill.className = "status-pill solved";
-      statusPill.textContent = "✓ Solved";
-      input.disabled = false; // Left enabled so students can test re-submitting solved level!
-      btn.textContent = `✓ Case #${i + 1} Solved (Click to Test Re-Submit)`;
-      btn.className = "btn btn-outline";
+      tab.classList.add("tab-solved");
+      seal.textContent = "✓ SOLVED";
     } else if (i === currentLevel && !finished) {
-      card.classList.add("active-case");
-      statusPill.className = "status-pill open";
-      statusPill.textContent = mistakes >= maxMistakes ? "Suspended (3 Mistakes)" : "Active Case";
-      input.disabled = false;
-      input.placeholder = `Enter deduction for Case #${i + 1}...`;
-      btn.textContent = `🔏 Submit Deduction #${i + 1} (On-Chain)`;
-      btn.className = "btn btn-gold";
+      seal.textContent = mistakes >= maxMistakes ? "SUSPENDED" : "ACTIVE";
     } else {
-      card.classList.add("locked-case");
-      statusPill.className = "status-pill locked";
-      statusPill.textContent = "Locked";
-      input.disabled = false;
-      input.placeholder = `Locked — Solve Case #${i} first`;
-      btn.textContent = `🔒 Locked (Submit to Test require() Revert)`;
-      btn.className = "btn btn-outline";
+      seal.textContent = "🔒 LOCKED";
     }
   }
 
-  // Live Timer
+  const c = CASES[selectedCaseIndex];
+  const isSolved = selectedCaseIndex < currentLevel;
+  const isActive = selectedCaseIndex === currentLevel && !finished;
+
+  const stampEl = document.getElementById("activeCaseStamp");
+  if (isSolved) {
+    stampEl.className = "stamp-badge stamp-solved";
+    stampEl.textContent = `CASE ${c.numeral} · VERIFIED & SEALED`;
+  } else if (isActive) {
+    stampEl.className = "stamp-badge";
+    stampEl.textContent = `ACTIVE INQUIRY · LEVEL ${c.level}`;
+  } else {
+    stampEl.className = "stamp-badge";
+    stampEl.textContent = `LOCKED DOSSIER · LEVEL ${c.level}`;
+  }
+
+  document.getElementById("activeCaseHashBadge").textContent = `Target Hash: ${c.hash.slice(0, 10)}...${c.hash.slice(-4)}`;
+  document.getElementById("activeCaseTitle").textContent = c.title;
+  document.getElementById("activeCaseArtwork").innerHTML = c.svg;
+  document.getElementById("activeCaseStory").textContent = c.story;
+  document.getElementById("activeCaseRiddle").textContent = c.riddle;
+
+  const clueBox = document.getElementById("activeClueBox");
+  clueBox.textContent = c.clue;
+  clueBox.classList.remove("visible");
+
+  document.getElementById("apparatusCaseLabel").textContent = `CASE ${c.numeral} OF III`;
+
+  const inputEl = document.getElementById("deductionInput");
+  inputEl.value = drafts[selectedCaseIndex] || "";
+  inputEl.placeholder = isSolved
+    ? `Solved (${DEMO_ANSWERS[selectedCaseIndex]}) — Submit to test require() revert`
+    : isActive
+    ? `Type Case ${c.numeral} deduction...`
+    : `Locked — Submit to test require() revert`;
+
+  const submitBtn = document.getElementById("submitDeductionBtn");
+  if (isSolved) {
+    submitBtn.textContent = `Test Re-Submit Case ${c.numeral} (Triggers require() Revert)`;
+  } else if (isActive) {
+    submitBtn.textContent = `Stamp & Verify Case ${c.numeral} on Sepolia`;
+  } else {
+    submitBtn.textContent = `Test Locked Case ${c.numeral} (Triggers require() Revert)`;
+  }
+
+  updateCipherTapePreview();
+
   if (timerInterval) clearInterval(timerInterval);
   const timerEl = document.getElementById("statTimer");
   if (finished) {
     timerEl.textContent = formatDuration(completionTime);
   } else if (isInvestigating && startedAt > 0) {
-    const updateClock = () => {
+    const tick = () => {
       const nowSec = Math.floor(Date.now() / 1000);
       timerEl.textContent = formatDuration(Math.max(0, nowSec - startedAt));
     };
-    updateClock();
-    timerInterval = setInterval(updateClock, 1000);
+    tick();
+    timerInterval = setInterval(tick, 1000);
   } else {
     timerEl.textContent = "00:00";
   }
 }
 
+function updateCipherTapePreview() {
+  const raw = document.getElementById("deductionInput").value;
+  drafts[selectedCaseIndex] = raw;
+  const norm = normalizeAnswer(raw);
+  const hash = computeKeccakHash(norm);
+  const target = LEVEL_HASHES[selectedCaseIndex];
+  const matches = hash && hash.toLowerCase() === target.toLowerCase();
+
+  const tape = document.getElementById("liveCipherTape");
+  if (!norm) {
+    tape.innerHTML = `NORMALIZED: <code>—</code> | TARGET: <code>${target.slice(0, 12)}...${target.slice(-4)}</code>`;
+  } else {
+    tape.innerHTML = `NORMALIZED: <code>"${norm}"</code> | HASH: <code>${
+      hash ? hash.slice(0, 12) + "..." + hash.slice(-4) : "—"
+    }</code> ${matches ? "✅ MATCH" : ""}`;
+  }
+}
+
 // ============================================================================
-// 9. HELPERS, LOGGING & ERROR PARSING
+// 10. HELPERS & ERROR FORMATTING
 // ============================================================================
 function ensureReadyForWrite() {
   if (isSandboxMode) return true;
   if (!userAddress || !signer) {
-    showBanner("warning", "Connect MetaMask First", "Click 'Connect MetaMask' in the top right corner (or enable Sandbox Mode).");
+    showBanner("warning", "Connect MetaMask", "Click 'Connect MetaMask' in the top brass bar (or toggle Sandbox ON).");
     return false;
   }
   if (!hasValidDeployedContract()) {
     showBanner(
       "warning",
-      "Contract Address Not Set",
-      "Paste your deployed Sepolia contract address in the bar above and click 'Load Contract', or toggle 'Sandbox Mode' to test locally."
+      "Contract Address Missing",
+      "Open the '⚙ Contract Setup' tab at the bottom to bind your Sepolia address, or click 'Sandbox: OFF' to test locally."
     );
     return false;
   }
@@ -756,7 +980,7 @@ function ensureReadyForWrite() {
 }
 
 function parseReadableError(err) {
-  if (!err) return "Unknown error occurred.";
+  if (!err) return "Unknown error.";
   if (err.reason) return err.reason;
   if (err.shortMessage) return err.shortMessage;
   if (err?.info?.error?.message) return err.info.error.message;
@@ -775,9 +999,11 @@ function showBanner(type, title, message, etherscanUrl = null, showSpinner = fal
   const msgEl = document.getElementById("txBannerMessage");
   const linkEl = document.getElementById("txBannerLink");
 
-  banner.className = `tx-banner show ${type}`;
+  document.body.classList.toggle("tx-busy", Boolean(showSpinner));
+
+  banner.className = `telegraph-strip show ${type}`;
   spinner.style.display = showSpinner ? "block" : "none";
-  titleEl.textContent = title;
+  titleEl.textContent = `${title}:`;
   msgEl.textContent = message;
 
   if (etherscanUrl) {
@@ -796,149 +1022,229 @@ function appendTxLog(actionText, resultText, txHash = null) {
   const tr = document.createElement("tr");
   const proofHtml = txHash
     ? `<a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener noreferrer">${shortAddress(txHash)} ↗</a>`
-    : `<span style="color: var(--text-muted);">${isSandboxMode ? "Sandbox Sim" : "Call / Revert"}</span>`;
+    : `<span style="color: #9c8a6b;">${isSandboxMode ? "Sandbox" : "Reverted Call"}</span>`;
 
   tr.innerHTML = `
-    <td class="mono">${actionText}</td>
+    <td>${actionText}</td>
     <td>${resultText}</td>
-    <td class="mono">${proofHtml}</td>
+    <td>${proofHtml}</td>
   `;
   tbody.prepend(tr);
 }
 
 // ============================================================================
-// 10. EVENT LISTENERS & DOM SETUP
+// 11. DOM LISTENERS
 // ============================================================================
 window.addEventListener("DOMContentLoaded", () => {
   initContractAddress();
-  renderDashboardAndCases();
+  initEphemeralCanvas();
+  renderDeskUI();
 
-  // Wallet & Network buttons
   document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
   document.getElementById("switchNetworkBtn").addEventListener("click", switchToSepolia);
 
-  // Close banner
   document.getElementById("txBannerClose").addEventListener("click", () => {
     document.getElementById("txBanner").classList.remove("show");
   });
 
-  // Save/load contract address
+  // Folder Tab Clicking with Ephemeral Vellum Breeze
+  document.querySelectorAll("[data-case-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedCaseIndex = Number(btn.getAttribute("data-case-tab"));
+      triggerPageBreeze();
+      renderDeskUI();
+    });
+  });
+
+  // Ephemeral Magnifying Spotlight on Evidence Plate
+  const evidenceFrame = document.getElementById("evidenceFrame");
+  if (evidenceFrame) {
+    evidenceFrame.addEventListener(
+      "pointermove",
+      (ev) => {
+        const rect = evidenceFrame.getBoundingClientRect();
+        const xPct = Math.round(((ev.clientX - rect.left) / rect.width) * 100);
+        const yPct = Math.round(((ev.clientY - rect.top) / rect.height) * 100);
+        evidenceFrame.style.setProperty("--lens-x", `${xPct}%`);
+        evidenceFrame.style.setProperty("--lens-y", `${yPct}%`);
+      },
+      { passive: true }
+    );
+  }
+
+  // Bottom Brass Drawer Tab Clicking
+  document.querySelectorAll("[data-drawer-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-drawer-tab");
+      document.querySelectorAll(".drawer-tab").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".drawer-pane").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(targetId).classList.add("active");
+    });
+  });
+
+  // Magnifying Glass Clue Toggle
+  document.getElementById("inspectClueBtn").addEventListener("click", () => {
+    document.getElementById("activeClueBox").classList.toggle("visible");
+  });
+
+  // Live Input Normalization + Ephemeral Typewriter Strike
+  const deductionInput = document.getElementById("deductionInput");
+  deductionInput.addEventListener("input", () => {
+    updateCipherTapePreview();
+    triggerTypewriterPulse();
+  });
+  deductionInput.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") {
+      handleSubmitAnswer(selectedCaseIndex);
+    }
+  });
+
+  // Stamp & Verify Button
+  document.getElementById("submitDeductionBtn").addEventListener("click", () => {
+    handleSubmitAnswer(selectedCaseIndex);
+  });
+
+  // Desk HUD Controls
+  document.getElementById("startInvestigationBtn").addEventListener("click", handleStartInvestigation);
+  document.getElementById("resetInvestigationBtn").addEventListener("click", handleResetInvestigation);
+  document.getElementById("reloadStateBtn").addEventListener("click", async () => {
+    await refreshAllState(false);
+    triggerPageBreeze();
+    showBanner("success", "Ledger Synced", "Latest progress read from chain storage.");
+  });
+  document.getElementById("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
+
+  // Sandbox Toggle
+  document.getElementById("toggleSandboxBtn").addEventListener("click", async (e) => {
+    isSandboxMode = !isSandboxMode;
+    e.currentTarget.textContent = isSandboxMode ? "🧪 Sandbox: ON" : "🧪 Sandbox: OFF";
+    updateNetworkLamp(null);
+    await refreshAllState(true);
+    showBanner(
+      isSandboxMode ? "warning" : "success",
+      isSandboxMode ? "Sandbox Enabled" : "Live Sepolia Mode",
+      isSandboxMode
+        ? "Simulating Game.sol in browser memory (no gas needed)."
+        : "Connected to live Ethereum Sepolia mode."
+    );
+  });
+
+  // Save Contract Address
   document.getElementById("saveContractBtn").addEventListener("click", async () => {
     const val = document.getElementById("contractAddressInput").value.trim();
     if (!ethers.isAddress(val)) {
-      showBanner("error", "Invalid Ethereum Address", "Please enter a valid 0x... Sepolia smart contract address.");
+      showBanner("error", "Invalid Address", "Enter a valid 0x... Sepolia contract address.");
       return;
     }
     contractAddress = val;
     localStorage.setItem(STORAGE_KEY_CONTRACT, contractAddress);
-    updateEtherscanContractLink();
+    updateEtherscanLinks();
 
     if (signer && !isSandboxMode) {
       contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
-      await refreshAllState();
-      showBanner("success", "Contract Loaded", `Connected to Sepolia contract ${shortAddress(contractAddress)}.`);
+      await refreshAllState(true);
+      showBanner("success", "Contract Bound", `Connected to ${shortAddress(contractAddress)}.`);
     } else {
-      showBanner("success", "Contract Address Saved", `Address ${shortAddress(contractAddress)} saved. Connect MetaMask to interact.`);
+      showBanner("success", "Address Saved", `Saved ${shortAddress(contractAddress)}. Connect MetaMask to interact.`);
     }
   });
 
-  // Reload state from blockchain
-  document.getElementById("reloadStateBtn").addEventListener("click", async () => {
-    await refreshAllState();
-    showBanner("success", "State Reloaded", "Latest progress and leaderboard fetched from storage.");
-  });
+  // 1-Click Deploy Game.sol to Sepolia (uses contract-artifact.json compiled by GitHub Actions)
+  const deployBtn = document.getElementById("deployContractBtn");
+  if (deployBtn) {
+    deployBtn.addEventListener("click", async () => {
+      if (!signer || !userAddress) {
+        await connectWallet();
+        if (!signer) return;
+      }
 
-  // Toggle Sandbox Mode
-  document.getElementById("toggleSandboxBtn").addEventListener("click", async (e) => {
-    isSandboxMode = !isSandboxMode;
-    e.currentTarget.textContent = isSandboxMode ? "🧪 Sandbox Mode: ON" : "🧪 Sandbox Mode: OFF";
-    updateNetworkBadge(null);
-    await refreshAllState();
-    showBanner(
-      isSandboxMode ? "warning" : "success",
-      isSandboxMode ? "Sandbox Simulation Mode Enabled" : "Live Ethereum Sepolia Mode Enabled",
-      isSandboxMode
-        ? "All actions now simulate Game.sol locally in your browser without requiring Sepolia gas."
-        : "Switched back to live Ethereum Sepolia smart contract mode."
-    );
-  });
+      try {
+        showBanner("pending", "Loading Compiled Bytecode", "Fetching contract-artifact.json...", null, true);
+        const res = await fetch("./contract-artifact.json");
+        if (!res.ok) {
+          throw new Error(
+            "contract-artifact.json not found yet. Push to GitHub first so GitHub Actions compiles Game.sol, or deploy via Remix IDE."
+          );
+        }
+        const artifact = await res.json();
 
-  // Start / Reset / Refresh Leaderboard buttons
-  document.getElementById("startInvestigationBtn").addEventListener("click", handleStartInvestigation);
-  document.getElementById("resetInvestigationBtn").addEventListener("click", handleResetInvestigation);
-  document.getElementById("refreshLeaderboardBtn").addEventListener("click", loadLeaderboard);
+        showBanner(
+          "pending",
+          "Confirm Deployment in MetaMask",
+          "Sign the transaction in MetaMask to deploy SherlockTreasureHunt to Sepolia...",
+          null,
+          true
+        );
 
-  // Clue buttons
-  document.querySelectorAll("[data-clue-btn]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = btn.getAttribute("data-clue-btn");
-      const clueEl = document.getElementById(`clueText${idx}`);
-      clueEl.classList.toggle("visible");
-    });
-  });
+        const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, signer);
+        const deployed = await factory.deploy();
+        const deployTx = deployed.deploymentTransaction();
+        const txUrl = deployTx ? `https://sepolia.etherscan.io/tx/${deployTx.hash}` : null;
 
-  // Live Normalization & Keccak-256 preview on inputs
-  document.querySelectorAll("[data-level-input]").forEach((input) => {
-    const idx = Number(input.getAttribute("data-level-input"));
-    input.addEventListener("input", () => {
-      const norm = normalizeAnswer(input.value);
-      const hash = computeKeccakHash(norm);
-      const previewEl = document.getElementById(`normPreview${idx}`);
-      const matches = hash && hash.toLowerCase() === LEVEL_HASHES[idx].toLowerCase();
-      previewEl.innerHTML = norm
-        ? `Normalized: <code>"${norm}"</code> | Hash: <code>${hash ? hash.slice(0, 12) + "..." + hash.slice(-4) : "—"}</code> ${
-            matches ? "✅" : ""
-          }`
-        : `Normalized: <span>(type answer)</span> | Target Hash: <code>${LEVEL_HASHES[idx].slice(0, 10)}...${LEVEL_HASHES[
-            idx
-          ].slice(-4)}</code>`;
-    });
+        showBanner(
+          "pending",
+          "Deploying Contract on Sepolia...",
+          "Waiting for block confirmation...",
+          txUrl,
+          true
+        );
 
-    input.addEventListener("keydown", (ev) => {
-      if (ev.key === "Enter") {
-        handleSubmitAnswer(idx);
+        await deployed.waitForDeployment();
+        const newAddr = await deployed.getAddress();
+
+        contractAddress = newAddr;
+        localStorage.setItem(STORAGE_KEY_CONTRACT, newAddr);
+        document.getElementById("contractAddressInput").value = newAddr;
+        updateEtherscanLinks();
+
+        isSandboxMode = false;
+        document.getElementById("toggleSandboxBtn").textContent = "🧪 Sandbox: OFF";
+        contract = new ethers.Contract(newAddr, CONTRACT_ABI, signer);
+        await refreshAllState(true);
+
+        triggerEphemeralWaxStamp(true, "DEPLOYED");
+        showBanner(
+          "success",
+          `Contract Deployed: ${newAddr}`,
+          `Run './deploy.sh ${newAddr}' in terminal to permanently bind this address in GitHub!`,
+          `https://sepolia.etherscan.io/address/${newAddr}`
+        );
+        appendTxLog("ContractFactory.deploy()", `🚀 Deployed at ${shortAddress(newAddr)}`, deployTx?.hash || null);
+      } catch (err) {
+        showBanner("error", "Deployment Failed", parseReadableError(err));
       }
     });
-  });
+  }
 
-  // Submit buttons for each level
-  document.querySelectorAll("[data-submit-level]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.getAttribute("data-submit-level"));
-      handleSubmitAnswer(idx);
-    });
-  });
-
-  // Inspector's Verification Lab (3 Mandatory Tests)
+  // 3 Mandatory Tests in Drawer
   document.getElementById("runPositiveTestBtn").addEventListener("click", () => {
-    const lvl = Math.min(detectiveState.currentLevel, 2);
-    const input = document.getElementById(`answerInput${lvl}`);
-    input.value = DEMO_ANSWERS[lvl].toUpperCase() + "  "; // Demonstrates uppercase + spaces normalization!
-    input.dispatchEvent(new Event("input"));
-    input.focus();
+    selectedCaseIndex = Math.min(detectiveState.currentLevel, 2);
+    drafts[selectedCaseIndex] = "  " + DEMO_ANSWERS[selectedCaseIndex].toUpperCase() + " ";
+    triggerPageBreeze();
+    renderDeskUI();
+    document.getElementById("deductionInput").focus();
     showBanner(
       "success",
-      `Positive Test Prepared for Case #${lvl + 1}`,
-      `Filled "${input.value}" (with uppercase & trailing spaces to prove normalization). Click 'Submit Deduction #${lvl + 1}' to unlock the next level!`
+      "Positive Test Loaded",
+      `Inscribed "${drafts[selectedCaseIndex]}" (uppercase + spaces) into Case ${CASES[selectedCaseIndex].numeral}. Click 'Stamp & Verify'!`
     );
   });
 
   document.getElementById("runWrongAnswerTestBtn").addEventListener("click", () => {
-    const lvl = Math.min(detectiveState.currentLevel, 2);
-    const input = document.getElementById(`answerInput${lvl}`);
-    input.value = "watson";
-    input.dispatchEvent(new Event("input"));
-    handleSubmitAnswer(lvl, "watson");
+    selectedCaseIndex = Math.min(detectiveState.currentLevel, 2);
+    drafts[selectedCaseIndex] = "watson";
+    renderDeskUI();
+    handleSubmitAnswer(selectedCaseIndex, "watson");
   });
 
   document.getElementById("runRepeatLevelTestBtn").addEventListener("click", () => {
-    // If player has solved at least Case #1 (currentLevel >= 1), try re-submitting Case #1 (level 0).
-    // If player is still on Case #1 (currentLevel == 0), try skipping ahead to Case #3 (level 2).
-    const testLevel = detectiveState.currentLevel >= 1 ? 0 : 2;
-    handleSubmitAnswer(testLevel, DEMO_ANSWERS[testLevel]);
+    const targetLevel = detectiveState.currentLevel >= 1 ? 0 : 2;
+    selectedCaseIndex = targetLevel;
+    renderDeskUI();
+    handleSubmitAnswer(targetLevel, DEMO_ANSWERS[targetLevel]);
   });
 
-  // Listen for MetaMask account or chain changes
   if (window.ethereum) {
     window.ethereum.on("accountsChanged", () => connectWallet());
     window.ethereum.on("chainChanged", () => window.location.reload());
